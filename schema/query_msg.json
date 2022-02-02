@@ -5,10 +5,92 @@
     {
       "type": "object",
       "required": [
-        "get_count"
+        "config"
       ],
       "properties": {
-        "get_count": {
+        "config": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "bet_live"
+      ],
+      "properties": {
+        "bet_live": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "reward_live"
+      ],
+      "properties": {
+        "reward_live": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "user_bet"
+      ],
+      "properties": {
+        "user_bet": {
+          "type": "object",
+          "required": [
+            "address",
+            "side"
+          ],
+          "properties": {
+            "address": {
+              "type": "string"
+            },
+            "side": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "user_rewards"
+      ],
+      "properties": {
+        "user_rewards": {
+          "type": "object",
+          "required": [
+            "address"
+          ],
+          "properties": {
+            "address": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "bet_status"
+      ],
+      "properties": {
+        "bet_status": {
           "type": "object"
         }
       },

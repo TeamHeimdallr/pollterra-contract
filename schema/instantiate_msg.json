@@ -3,12 +3,29 @@
   "title": "InstantiateMsg",
   "type": "object",
   "required": [
-    "count"
+    "bet_end_time",
+    "cancel_hold",
+    "poll_name",
+    "start_time"
   ],
   "properties": {
-    "count": {
+    "bet_end_time": {
       "type": "integer",
-      "format": "int32"
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "cancel_hold": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "poll_name": {
+      "type": "string"
+    },
+    "start_time": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
     }
   }
 }

@@ -5,10 +5,76 @@
     {
       "type": "object",
       "required": [
-        "increment"
+        "bet"
       ],
       "properties": {
-        "increment": {
+        "bet": {
+          "type": "object",
+          "required": [
+            "side"
+          ],
+          "properties": {
+            "side": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "cancel_bet"
+      ],
+      "properties": {
+        "cancel_bet": {
+          "type": "object",
+          "required": [
+            "side"
+          ],
+          "properties": {
+            "side": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "finish_poll"
+      ],
+      "properties": {
+        "finish_poll": {
+          "type": "object",
+          "required": [
+            "winner"
+          ],
+          "properties": {
+            "winner": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "revert_poll"
+      ],
+      "properties": {
+        "revert_poll": {
           "type": "object"
         }
       },
@@ -17,20 +83,11 @@
     {
       "type": "object",
       "required": [
-        "reset"
+        "claim"
       ],
       "properties": {
-        "reset": {
-          "type": "object",
-          "required": [
-            "count"
-          ],
-          "properties": {
-            "count": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
+        "claim": {
+          "type": "object"
         }
       },
       "additionalProperties": false
