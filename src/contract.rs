@@ -272,7 +272,7 @@ pub fn try_finish_poll(deps: DepsMut, info: MessageInfo, winner: u8) -> StdResul
     for (addr, reward) in all?.iter() {
         REWARDS.update(
             deps.storage,
-            &deps.api.addr_validate(str::from_utf8(&addr)?)?,
+            &deps.api.addr_validate(str::from_utf8(addr)?)?,
             |_exists| -> StdResult<Uint128> {
                 Ok(((*reward) * odds) * (Decimal::percent(99_u64))) // 1% fee
             },
@@ -573,7 +573,7 @@ mod tests {
 
         let msg = ExecuteMsg::RevertPoll {};
         let info = mock_info("creator", &[]);
-        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+        let _res = execute(deps.as_mut(), env, info, msg).unwrap();
 
         let res = query(
             deps.as_ref(),
@@ -609,7 +609,7 @@ mod tests {
 
         let msg = ExecuteMsg::CancelBet { side: 0 };
         let info = mock_info("user1", &[]);
-        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+        let _res = execute(deps.as_mut(), env, info, msg).unwrap();
 
         let res = query(
             deps.as_ref(),
@@ -649,7 +649,7 @@ mod tests {
 
         let msg = ExecuteMsg::FinishPoll { winner: 0 };
         let info = mock_info("creator", &[]);
-        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+        let _res = execute(deps.as_mut(), env, info, msg).unwrap();
 
         let res = query(
             deps.as_ref(),
@@ -703,7 +703,7 @@ mod tests {
 
         let msg = ExecuteMsg::Claim {};
         let info = mock_info("user1", &[]);
-        let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+        let res = execute(deps.as_mut(), env, info, msg).unwrap();
         assert_eq!(
             CosmosMsg::Bank(BankMsg::Send {
                 to_address: "user1".to_string(),
