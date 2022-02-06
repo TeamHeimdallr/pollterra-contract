@@ -1,7 +1,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Env,
-    MessageInfo, Order, Response, StdError, StdResult, Uint128
+    to_binary, BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Env, MessageInfo, Order,
+    Response, StdError, StdResult, Uint128,
 };
 use cw2::set_contract_version;
 #[cfg(not(feature = "library"))]
@@ -121,20 +121,16 @@ pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResul
     )?;
 
     // add bet amount to USER_TOTAL_AMOUNT state (accumulate both side)
-    USER_TOTAL_AMOUNT.update(
-        deps.storage,
-        &addr,
-        |exists| -> StdResult<Uint128> {
-            match exists {
-                Some(bet) => {
-                    let mut modified = bet;
-                    modified += sent;
-                    Ok(modified)
-                }
-                None => Ok(sent),
+    USER_TOTAL_AMOUNT.update(deps.storage, &addr, |exists| -> StdResult<Uint128> {
+        match exists {
+            Some(bet) => {
+                let mut modified = bet;
+                modified += sent;
+                Ok(modified)
             }
-        },
-    )?;
+            None => Ok(sent),
+        }
+    })?;
 
     // add bet amount to SIDE_TOTAL_AMOUNT state (accumulate single side, every user)
     SIDE_TOTAL_AMOUNT.update(
@@ -193,20 +189,16 @@ pub fn try_cancel_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> S
         |_exists| -> StdResult<Uint128> { Ok(Uint128::zero()) },
     )?;
 
-    USER_TOTAL_AMOUNT.update(
-        deps.storage,
-        &addr,
-        |exists| -> StdResult<Uint128> {
-            match exists {
-                Some(bet) => {
-                    let mut modified = bet;
-                    modified -= value;
-                    Ok(modified)
-                }
-                None => Ok(Uint128::zero()),
+    USER_TOTAL_AMOUNT.update(deps.storage, &addr, |exists| -> StdResult<Uint128> {
+        match exists {
+            Some(bet) => {
+                let mut modified = bet;
+                modified -= value;
+                Ok(modified)
             }
-        },
-    )?;
+            None => Ok(Uint128::zero()),
+        }
+    })?;
 
     SIDE_TOTAL_AMOUNT.update(
         deps.storage,
@@ -278,9 +270,13 @@ pub fn try_finish_poll(deps: DepsMut, info: MessageInfo, winner: u8) -> StdResul
         .collect();
 
     for (addr, reward) in all?.iter() {
-        REWARDS.update(deps.storage, &deps.api.addr_validate(str::from_utf8(&addr)?)?, |_exists| -> StdResult<Uint128> {
-            Ok(((*reward) * odds) * (Decimal::percent(99_u64))) // 1% fee
-        })?;
+        REWARDS.update(
+            deps.storage,
+            &deps.api.addr_validate(str::from_utf8(&addr)?)?,
+            |_exists| -> StdResult<Uint128> {
+                Ok(((*reward) * odds) * (Decimal::percent(99_u64))) // 1% fee
+            },
+        )?;
         // println!("{}", ((*reward) * odds) * (Decimal::percent(99 as u64)) );
     }
 
@@ -371,11 +367,9 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
         return Err(StdError::generic_err("there's no rewards to claim"));
     }
 
-    REWARDS.update(
-        deps.storage,
-        &addr,
-        |_exists| -> StdResult<Uint128> { Ok(Uint128::zero()) },
-    )?;
+    REWARDS.update(deps.storage, &addr, |_exists| -> StdResult<Uint128> {
+        Ok(Uint128::zero())
+    })?;
 
     Ok(Response::new()
         .add_attribute("method", "try_claim")
