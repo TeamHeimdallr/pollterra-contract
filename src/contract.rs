@@ -1,7 +1,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Env, MessageInfo,
-    Order, Response, StdError, StdResult, Uint128,
+    to_binary, BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Env, MessageInfo, Order,
+    Response, StdError, StdResult, Uint128,
 };
 use cw2::set_contract_version;
 #[cfg(not(feature = "library"))]
@@ -508,8 +508,8 @@ fn query_user_rewards(deps: Deps, address: String) -> StdResult<UserRewardsRespo
 mod tests {
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::Api;
     use cosmwasm_std::{coins, from_binary};
+    use cosmwasm_std::{Addr, Api};
 
     #[test]
     fn proper_initialization() {
