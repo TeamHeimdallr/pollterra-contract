@@ -38,10 +38,10 @@ impl fmt::Display for BetStatus {
     }
 }
 
-pub const BETS: Map<(&[u8], &[u8]), Uint128> = Map::new("bets"); // (side, addr): amount
-pub const USER_TOTAL_AMOUNT: Map<&[u8], Uint128> = Map::new("user_total_amount"); // addr: amount
+pub const BETS: Map<(&[u8], &Addr), Uint128> = Map::new("bets"); // (side, addr): amount
+pub const USER_TOTAL_AMOUNT: Map<&Addr, Uint128> = Map::new("user_total_amount"); // addr: amount
 pub const SIDE_TOTAL_AMOUNT: Map<&[u8], Uint128> = Map::new("side_total_amount"); // side: amount
-pub const REWARDS: Map<&[u8], Uint128> = Map::new("rewards"); // addr: amount
+pub const REWARDS: Map<&Addr, Uint128> = Map::new("rewards"); // addr: amount
 pub const STATE: Item<State> = Item::new("state");
 
 pub fn store_state(storage: &mut dyn Storage, state: &State) -> StdResult<()> {

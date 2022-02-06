@@ -1,7 +1,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, BankMsg, Binary, CanonicalAddr, Coin, CosmosMsg, Decimal, Deps, DepsMut, Env,
-    MessageInfo, Order, Response, StdError, StdResult, Uint128,
+    to_binary, BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Env,
+    MessageInfo, Order, Response, StdError, StdResult, Uint128
 };
 use cw2::set_contract_version;
 #[cfg(not(feature = "library"))]
@@ -67,7 +67,6 @@ pub fn execute(
 
 pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResult<Response> {
     let addr = info.sender.clone();
-    let addr_raw = deps.api.addr_canonicalize(addr.as_str())?;
 
     let mut state = read_state(deps.storage)?;
 
@@ -108,7 +107,7 @@ pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResul
     // add bet amount to BETS state (accumulate single side)
     BETS.update(
         deps.storage,
-        (&side.to_be_bytes(), addr_raw.as_slice()),
+        (&side.to_be_bytes(), &addr),
         |exists| -> StdResult<Uint128> {
             match exists {
                 Some(bet) => {
@@ -124,7 +123,7 @@ pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResul
     // add bet amount to USER_TOTAL_AMOUNT state (accumulate both side)
     USER_TOTAL_AMOUNT.update(
         deps.storage,
-        addr_raw.as_slice(),
+        &addr,
         |exists| -> StdResult<Uint128> {
             match exists {
                 Some(bet) => {
@@ -167,7 +166,6 @@ pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResul
 
 pub fn try_cancel_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResult<Response> {
     let addr = info.sender;
-    let addr_raw = deps.api.addr_canonicalize(addr.as_str())?;
 
     let mut state = read_state(deps.storage)?;
 
@@ -180,7 +178,7 @@ pub fn try_cancel_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> S
     }
 
     // BETS State load
-    let value = match BETS.may_load(deps.storage, (&side.to_be_bytes(), addr_raw.as_slice()))? {
+    let value = match BETS.may_load(deps.storage, (&side.to_be_bytes(), &addr))? {
         None => Uint128::zero(),
         Some(amount) => amount,
     };
@@ -191,13 +189,13 @@ pub fn try_cancel_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> S
 
     BETS.update(
         deps.storage,
-        (&side.to_be_bytes(), addr_raw.as_slice()),
+        (&side.to_be_bytes(), &addr),
         |_exists| -> StdResult<Uint128> { Ok(Uint128::zero()) },
     )?;
 
     USER_TOTAL_AMOUNT.update(
         deps.storage,
-        addr_raw.as_slice(),
+        &addr,
         |exists| -> StdResult<Uint128> {
             match exists {
                 Some(bet) => {
@@ -274,12 +272,13 @@ pub fn try_finish_poll(deps: DepsMut, info: MessageInfo, winner: u8) -> StdResul
         .range(deps.storage, None, None, Order::Ascending)
         .map(|item| {
             let (addr, reward) = item?;
+            // println!("{}", str::from_utf8(&addr)?);
             Ok((addr, reward))
         })
         .collect();
 
     for (addr, reward) in all?.iter() {
-        REWARDS.update(deps.storage, addr, |_exists| -> StdResult<Uint128> {
+        REWARDS.update(deps.storage, &deps.api.addr_validate(str::from_utf8(&addr)?)?, |_exists| -> StdResult<Uint128> {
             Ok(((*reward) * odds) * (Decimal::percent(99_u64))) // 1% fee
         })?;
         // println!("{}", ((*reward) * odds) * (Decimal::percent(99 as u64)) );
@@ -319,12 +318,9 @@ pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> StdResult<Response> 
         .range(deps.storage, None, None, Order::Ascending)
         .map(|item| {
             let (addr, spent) = item?;
-            let addr_str = deps
-                .api
-                .addr_humanize(&CanonicalAddr::from(addr.clone()))?
-                .to_string();
+            // println!("{}", str::from_utf8(&addr)?);
             msgs.push(CosmosMsg::Bank(BankMsg::Send {
-                to_address: addr_str,
+                to_address: str::from_utf8(&addr)?.to_string(),
                 amount: vec![Coin {
                     denom: "uusd".to_string(),
                     amount: spent,
@@ -356,7 +352,6 @@ pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> StdResult<Response> 
 
 pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
     let addr = info.sender;
-    let addr_raw = deps.api.addr_canonicalize(addr.as_str())?;
     let state = read_state(deps.storage)?;
 
     if state.status != BetStatus::Reward {
@@ -367,7 +362,7 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
     }
 
     // REWARDS State load
-    let value = match REWARDS.may_load(deps.storage, addr_raw.as_slice())? {
+    let value = match REWARDS.may_load(deps.storage, &addr)? {
         None => Uint128::zero(),
         Some(amount) => amount,
     };
@@ -378,7 +373,7 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
 
     REWARDS.update(
         deps.storage,
-        addr_raw.as_slice(),
+        &addr,
         |_exists| -> StdResult<Uint128> { Ok(Uint128::zero()) },
     )?;
 
@@ -473,8 +468,8 @@ fn query_reward_live(deps: Deps) -> StdResult<RewardLiveResponse> {
 }
 
 fn query_user_bet(deps: Deps, address: String, side: u8) -> StdResult<UserBetResponse> {
-    let addr = deps.api.addr_canonicalize(&address)?;
-    let value = match BETS.may_load(deps.storage, (&side.to_be_bytes(), addr.as_slice()))? {
+    let addr = deps.api.addr_validate(&address)?;
+    let value = match BETS.may_load(deps.storage, (&side.to_be_bytes(), &addr))? {
         None => Uint128::new(0),
         Some(amount) => amount,
     };
@@ -483,8 +478,8 @@ fn query_user_bet(deps: Deps, address: String, side: u8) -> StdResult<UserBetRes
 }
 
 fn query_user_rewards(deps: Deps, address: String) -> StdResult<UserRewardsResponse> {
-    let addr = deps.api.addr_canonicalize(&address)?;
-    let value = match REWARDS.may_load(deps.storage, addr.as_slice())? {
+    let addr = deps.api.addr_validate(&address)?;
+    let value = match REWARDS.may_load(deps.storage, &addr)? {
         None => Uint128::new(0),
         Some(amount) => amount,
     };
