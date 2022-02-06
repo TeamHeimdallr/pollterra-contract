@@ -19,6 +19,8 @@ pub enum ExecuteMsg {
     FinishPoll { winner: u8 },
     RevertPoll {},
     Claim {},
+    ResetPoll {},
+    TransferOwner { new_owner: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

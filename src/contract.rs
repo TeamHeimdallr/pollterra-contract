@@ -1,7 +1,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Env, MessageInfo, Order,
-    Response, StdError, StdResult, Uint128,
+    to_binary, Addr, BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Env, MessageInfo,
+    Order, Response, StdError, StdResult, Uint128,
 };
 use cw2::set_contract_version;
 #[cfg(not(feature = "library"))]
@@ -62,6 +62,8 @@ pub fn execute(
         ExecuteMsg::FinishPoll { winner } => try_finish_poll(deps, info, winner),
         ExecuteMsg::RevertPoll {} => try_revert_poll(deps, info),
         ExecuteMsg::Claim {} => try_claim(deps, info),
+        ExecuteMsg::ResetPoll {} => try_reset_poll(deps, info),
+        ExecuteMsg::TransferOwner { new_owner } => try_transfer_owner(deps, info, new_owner),
     }
 }
 
@@ -410,6 +412,27 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
 //         .collect()
 // }
 
+pub fn try_reset_poll(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
+    Ok(Response::new().add_attribute("method", "try_reset_poll"))
+}
+
+pub fn try_transfer_owner(
+    deps: DepsMut,
+    info: MessageInfo,
+    new_owner: String,
+) -> StdResult<Response> {
+    let mut state = read_state(deps.storage)?;
+    if info.sender != state.owner {
+        return Err(StdError::generic_err(
+            "only the original owner can transfer the ownership",
+        ));
+    }
+    state.owner = deps.api.addr_validate(&new_owner)?;
+    store_state(deps.storage, &state)?;
+
+    Ok(Response::new().add_attribute("method", "try_transfer_owner"))
+}
+
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -485,6 +508,7 @@ fn query_user_rewards(deps: Deps, address: String) -> StdResult<UserRewardsRespo
 mod tests {
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
+    use cosmwasm_std::Api;
     use cosmwasm_std::{coins, from_binary};
 
     #[test]
@@ -725,5 +749,79 @@ mod tests {
         .unwrap();
         let value: UserRewardsResponse = from_binary(&res).unwrap();
         assert_eq!(Uint128::new(0), value.reward);
+    }
+
+    #[test]
+    fn transfer_owner() {
+        let mut deps = mock_dependencies(&[]);
+        let mut env = mock_env();
+        env.block.height = 6340000;
+
+        let msg = InstantiateMsg {
+            poll_name: "test_poll".to_string(),
+            start_time: 6300000,
+            bet_end_time: 6400000,
+            cancel_hold: 6390000,
+        };
+
+        let info = mock_info("creator", &[]);
+        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        let msg = QueryMsg::Config {};
+        let res = query(deps.as_ref(), env.clone(), msg).unwrap();
+        assert_eq!(
+            "creator",
+            from_binary::<State>(&res).unwrap().owner.as_str()
+        );
+
+        let msg = ExecuteMsg::TransferOwner {
+            new_owner: String::from("user1"),
+        };
+        let info = mock_info("creator", &[]);
+        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+        let msg = QueryMsg::Config {};
+        let res = query(deps.as_ref(), env.clone(), msg).unwrap();
+        assert_eq!("user1", from_binary::<State>(&res).unwrap().owner.as_str());
+    }
+
+    #[test]
+    fn validate_addr() {
+        let mut deps = mock_dependencies(&[]);
+        let addr = "creator";
+        assert_eq!(
+            addr,
+            deps.api
+                .addr_validate(addr)
+                .unwrap_or(Addr::unchecked(""))
+                .as_str()
+        );
+
+        let addr = "what-users-provide";
+        assert_eq!(
+            addr,
+            deps.api
+                .addr_validate(addr)
+                .unwrap_or(Addr::unchecked(""))
+                .as_str()
+        );
+
+        let addr = "아모파츠카느@#!@$!@";
+        assert_eq!(
+            addr,
+            deps.api
+                .addr_validate(addr)
+                .unwrap_or(Addr::unchecked(""))
+                .as_str()
+        );
+
+        let addr = "cr eat  o r";
+        assert_eq!(
+            addr,
+            deps.api
+                .addr_validate(addr)
+                .unwrap_or(Addr::unchecked(""))
+                .as_str()
+        );
     }
 }
