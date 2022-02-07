@@ -769,6 +769,8 @@ mod tests {
         let info = mock_info("user2", &coins(2_000_000, "uusd"));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
+        env.block.time = Timestamp::from_seconds(2000000000);
+
         let msg = ExecuteMsg::FinishPoll { winner: 0 };
         let info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), env, info, msg).unwrap();
@@ -807,6 +809,8 @@ mod tests {
         let msg = ExecuteMsg::Bet { side: 1 };
         let info = mock_info("user2", &coins(2_000_000, "uusd"));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+        env.block.time = Timestamp::from_seconds(2000000000);
 
         let msg = ExecuteMsg::FinishPoll { winner: 0 };
         let info = mock_info("creator", &[]);
@@ -887,13 +891,13 @@ mod tests {
     fn reset_poll() {
         let mut deps = mock_dependencies(&[]);
         let mut env = mock_env();
-        env.block.height = 6340000;
+        env.block.time = Timestamp::from_seconds(1649673600);
 
         let msg = InstantiateMsg {
             poll_name: "test_poll".to_string(),
-            start_time: 6300000,
-            bet_end_time: 6400000,
-            cancel_hold: 6390000,
+            start_time: 1643673600,
+            bet_end_time: 1653673600,
+            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -905,6 +909,8 @@ mod tests {
         let msg = ExecuteMsg::Bet { side: 1 };
         let info = mock_info("user2", &coins(2_000_000, "uusd"));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+        env.block.time = Timestamp::from_seconds(2000000000);
 
         let msg = ExecuteMsg::FinishPoll { winner: 0 };
         let info = mock_info("creator", &[]);
@@ -920,9 +926,9 @@ mod tests {
 
         let msg = ExecuteMsg::ResetPoll {
             poll_name: "ended_poll".to_string(),
-            start_time: 7300000,
-            bet_end_time: 7400000,
-            cancel_hold: 7390000,
+            start_time: 2643673600,
+            bet_end_time: 2653673600,
+            cancel_hold: 2650673600,
         };
         let info = mock_info("creator", &[]);
         let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
