@@ -1,7 +1,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_binary, BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Env, MessageInfo, Order,
-    Response, StdError, StdResult, Uint128,
+    Response, StdError, StdResult, Timestamp, Uint128,
 };
 use cw2::set_contract_version;
 #[cfg(not(feature = "library"))]
@@ -70,11 +70,16 @@ pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResul
 
     let mut state = read_state(deps.storage)?;
 
-    // current block height is less than start height or larger than bet end height
-    if env.block.height < state.start_time || env.block.height >= state.bet_end_time {
+    // current block time is less than start time or larger than bet end time
+    if env.block.time < Timestamp::from_seconds(state.start_time)
+        || env.block.time >= Timestamp::from_seconds(state.bet_end_time)
+    {
         // update bet live state
         state.bet_live = false;
-        return Err(StdError::generic_err(format!("Bet is not live. current block height: {}, start_block_height: {}, bet_end_block_height: {}", env.block.height, state.start_time, state.bet_end_time)));
+        return Err(StdError::generic_err(format!(
+            "Bet is not live. current block time: {}, start block time: {}, bet end time: {}",
+            env.block.time, state.start_time, state.bet_end_time
+        )));
     }
 
     // update bet live state
@@ -165,10 +170,10 @@ pub fn try_cancel_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> S
 
     let mut state = read_state(deps.storage)?;
 
-    // exceeds cancel threshold block height
-    if env.block.height > state.cancel_hold {
+    // exceeds cancel threshold block time
+    if env.block.time > Timestamp::from_seconds(state.cancel_hold) {
         return Err(StdError::generic_err(format!(
-            "cannot cancel after {} block height",
+            "cannot cancel after {} block time",
             state.cancel_hold
         )));
     }
@@ -430,12 +435,12 @@ fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
 fn query_bet_status(deps: Deps, env: Env) -> StdResult<BetStatusResponse> {
     let state = read_state(deps.storage)?;
 
-    // bet_live can be incorrect if "bet" execution is not called. threfore use block height
+    // bet_live can be incorrect if "bet" execution is not called. therefore use block time
     let bet_status = if state.status == BetStatus::Closed {
         BetStatus::Closed
-    } else if env.block.height < state.start_time {
+    } else if env.block.time < Timestamp::from_seconds(state.start_time) {
         BetStatus::Created
-    } else if env.block.height < state.bet_end_time {
+    } else if env.block.time < Timestamp::from_seconds(state.bet_end_time) {
         BetStatus::Betting
     } else if state.reward_live {
         BetStatus::Reward
@@ -493,9 +498,9 @@ mod tests {
 
         let msg = InstantiateMsg {
             poll_name: "test_poll".to_string(),
-            start_time: 6300000,
-            bet_end_time: 6400000,
-            cancel_hold: 6390000,
+            start_time: 1643673600,
+            bet_end_time: 1653673600,
+            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
 
@@ -507,22 +512,22 @@ mod tests {
         let res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
         let value: State = from_binary(&res).unwrap();
         assert_eq!("test_poll", value.poll_name);
-        assert_eq!(6300000, value.start_time);
-        assert_eq!(6400000, value.bet_end_time);
-        assert_eq!(6390000, value.cancel_hold);
+        assert_eq!(1643673600, value.start_time);
+        assert_eq!(1653673600, value.bet_end_time);
+        assert_eq!(1650673600, value.cancel_hold);
     }
 
     #[test]
     fn proper_bet_once() {
         let mut deps = mock_dependencies(&[]);
         let mut env = mock_env();
-        env.block.height = 6340000;
+        env.block.time = Timestamp::from_seconds(1649673600);
 
         let msg = InstantiateMsg {
             poll_name: "test_poll".to_string(),
-            start_time: 6300000,
-            bet_end_time: 6400000,
-            cancel_hold: 6390000,
+            start_time: 1643673600,
+            bet_end_time: 1653673600,
+            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -548,13 +553,13 @@ mod tests {
     fn proper_revert() {
         let mut deps = mock_dependencies(&[]);
         let mut env = mock_env();
-        env.block.height = 6340000;
+        env.block.time = Timestamp::from_seconds(1649673600);
 
         let msg = InstantiateMsg {
             poll_name: "test_poll".to_string(),
-            start_time: 6300000,
-            bet_end_time: 6400000,
-            cancel_hold: 6390000,
+            start_time: 1643673600,
+            bet_end_time: 1653673600,
+            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -592,13 +597,13 @@ mod tests {
     fn proper_cancel() {
         let mut deps = mock_dependencies(&[]);
         let mut env = mock_env();
-        env.block.height = 6340000;
+        env.block.time = Timestamp::from_seconds(1649673600);
 
         let msg = InstantiateMsg {
             poll_name: "test_poll".to_string(),
-            start_time: 6300000,
-            bet_end_time: 6400000,
-            cancel_hold: 6390000,
+            start_time: 1643673600,
+            bet_end_time: 1653673600,
+            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -628,13 +633,13 @@ mod tests {
     fn proper_finish() {
         let mut deps = mock_dependencies(&[]);
         let mut env = mock_env();
-        env.block.height = 6340000;
+        env.block.time = Timestamp::from_seconds(1649673600);
 
         let msg = InstantiateMsg {
             poll_name: "test_poll".to_string(),
-            start_time: 6300000,
-            bet_end_time: 6400000,
-            cancel_hold: 6390000,
+            start_time: 1643673600,
+            bet_end_time: 1653673600,
+            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -667,13 +672,13 @@ mod tests {
     fn proper_claim() {
         let mut deps = mock_dependencies(&[]);
         let mut env = mock_env();
-        env.block.height = 6340000;
+        env.block.time = Timestamp::from_seconds(1649673600);
 
         let msg = InstantiateMsg {
             poll_name: "test_poll".to_string(),
-            start_time: 6300000,
-            bet_end_time: 6400000,
-            cancel_hold: 6390000,
+            start_time: 1643673600,
+            bet_end_time: 1653673600,
+            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
