@@ -62,7 +62,20 @@ pub fn execute(
         ExecuteMsg::FinishPoll { winner } => try_finish_poll(deps, info, winner),
         ExecuteMsg::RevertPoll {} => try_revert_poll(deps, info),
         ExecuteMsg::Claim {} => try_claim(deps, info),
-        ExecuteMsg::ResetPoll {} => try_reset_poll(deps, info),
+        ExecuteMsg::ResetPoll {
+            poll_name,
+            start_time,
+            bet_end_time,
+            cancel_hold,
+        } => try_reset_poll(
+            deps,
+            _env,
+            info,
+            poll_name,
+            start_time,
+            bet_end_time,
+            cancel_hold,
+        ),
         ExecuteMsg::TransferOwner { new_owner } => try_transfer_owner(deps, info, new_owner),
     }
 }
@@ -369,9 +382,7 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
         return Err(StdError::generic_err("there's no rewards to claim"));
     }
 
-    REWARDS.update(deps.storage, &addr, |_exists| -> StdResult<Uint128> {
-        Ok(Uint128::zero())
-    })?;
+    REWARDS.remove(deps.storage, &addr);
 
     Ok(Response::new()
         .add_attribute("method", "try_claim")
@@ -412,8 +423,83 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
 //         .collect()
 // }
 
-pub fn try_reset_poll(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
-    Ok(Response::new().add_attribute("method", "try_reset_poll"))
+pub fn try_reset_poll(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    poll_name: String,
+    start_time: u64,
+    bet_end_time: u64,
+    cancel_hold: u64,
+) -> StdResult<Response> {
+    let mut state = read_state(deps.storage)?;
+    if info.sender != state.owner {
+        return Err(StdError::generic_err(
+            "only the original owner can reset the poll",
+        ));
+    }
+    let bet_status = state.status.clone();
+    if bet_status != BetStatus::Reward && bet_status != BetStatus::Closed {
+        return Err(StdError::generic_err(
+            "You can't reset the poll until the poll ends",
+        ));
+    }
+
+    // To return all the rewards
+    let mut reward_msgs: Vec<CosmosMsg> = vec![];
+    REWARDS
+        .range(deps.storage, None, None, Order::Ascending)
+        .for_each(|item| {
+            if let Ok((addr, reward)) = item {
+                let addr = str::from_utf8(&addr).unwrap_or("").to_string();
+                if addr != String::default() {
+                    reward_msgs.push(CosmosMsg::Bank(BankMsg::Send {
+                        to_address: addr,
+                        amount: vec![Coin {
+                            denom: "uusd".to_string(),
+                            amount: reward,
+                        }],
+                    }));
+                }
+            }
+        });
+
+    // Withdrawal
+    let contract_balance = deps.querier.query_balance(&env.contract.address, "uusd")?;
+    let withdrawal_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
+        to_address: state.owner.to_string(),
+        amount: vec![Coin {
+            denom: "uusd".to_string(),
+            amount: contract_balance.amount,
+        }],
+    });
+
+    // Clear all the states
+    let keys: Vec<_> = deps
+        .storage
+        .range(None, None, Order::Ascending)
+        .map(|(k, _)| k)
+        .collect();
+    for k in keys {
+        deps.storage.remove(&k);
+    }
+
+    state.status = BetStatus::Created;
+    state.bet_live = false;
+    state.reward_live = false;
+    state.poll_name = poll_name;
+    state.start_time = start_time;
+    state.bet_end_time = bet_end_time;
+    state.cancel_hold = cancel_hold;
+    state.total_amount = Uint128::zero();
+
+    STATE.save(deps.storage, &state)?;
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
+    Ok(Response::new()
+        .add_attribute("method", "try_reset_poll")
+        .add_messages(reward_msgs)
+        .add_message(withdrawal_msg))
 }
 
 pub fn try_transfer_owner(
@@ -509,7 +595,6 @@ mod tests {
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
     use cosmwasm_std::{coins, from_binary};
-    use cosmwasm_std::{Addr, Api};
 
     #[test]
     fn proper_initialization() {
@@ -786,42 +871,75 @@ mod tests {
     }
 
     #[test]
-    fn validate_addr() {
+    fn reset_poll() {
         let mut deps = mock_dependencies(&[]);
-        let addr = "creator";
+        let mut env = mock_env();
+        env.block.height = 6340000;
+
+        let msg = InstantiateMsg {
+            poll_name: "test_poll".to_string(),
+            start_time: 6300000,
+            bet_end_time: 6400000,
+            cancel_hold: 6390000,
+        };
+        let info = mock_info("creator", &[]);
+        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        let msg = ExecuteMsg::Bet { side: 0 };
+        let info = mock_info("user1", &coins(1_000_000, "uusd"));
+        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+        let msg = ExecuteMsg::Bet { side: 1 };
+        let info = mock_info("user2", &coins(2_000_000, "uusd"));
+        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+        let msg = ExecuteMsg::FinishPoll { winner: 0 };
+        let info = mock_info("creator", &[]);
+        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+        let cnt = deps
+            .as_mut()
+            .storage
+            .range(None, None, Order::Ascending)
+            .count();
+        // STATE, CONTRACT, (BETS, USERS_TOTAL_AMOUNT, SIDE_TOTAL_AMOUNT) * 2, REWARDS
+        assert_eq!(9, cnt);
+
+        let msg = ExecuteMsg::ResetPoll {
+            poll_name: "ended_poll".to_string(),
+            start_time: 7300000,
+            bet_end_time: 7400000,
+            cancel_hold: 7390000,
+        };
+        let info = mock_info("creator", &[]);
+        let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
         assert_eq!(
-            addr,
-            deps.api
-                .addr_validate(addr)
-                .unwrap_or(Addr::unchecked(""))
-                .as_str()
+            CosmosMsg::Bank(BankMsg::Send {
+                to_address: "user1".to_string(),
+                amount: vec![Coin {
+                    denom: "uusd".to_string(),
+                    amount: Uint128::new(2970000)
+                }]
+            }),
+            res.messages[0].msg
         );
 
-        let addr = "what-users-provide";
         assert_eq!(
-            addr,
-            deps.api
-                .addr_validate(addr)
-                .unwrap_or(Addr::unchecked(""))
-                .as_str()
+            CosmosMsg::Bank(BankMsg::Send {
+                to_address: "creator".to_string(),
+                amount: vec![Coin {
+                    denom: "uusd".to_string(),
+                    amount: Uint128::zero() // Can't query balance of this contract in local
+                }]
+            }),
+            res.messages[1].msg
         );
 
-        let addr = "아모파츠카느@#!@$!@";
-        assert_eq!(
-            addr,
-            deps.api
-                .addr_validate(addr)
-                .unwrap_or(Addr::unchecked(""))
-                .as_str()
-        );
-
-        let addr = "cr eat  o r";
-        assert_eq!(
-            addr,
-            deps.api
-                .addr_validate(addr)
-                .unwrap_or(Addr::unchecked(""))
-                .as_str()
-        );
+        let cnt = deps
+            .as_mut()
+            .storage
+            .range(None, None, Order::Ascending)
+            .count();
+        assert_eq!(2, cnt); // STATE, CONTRACT
     }
 }
