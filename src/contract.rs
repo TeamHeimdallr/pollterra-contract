@@ -1,7 +1,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_binary, BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Env, MessageInfo, Order,
-    Response, StdError, StdResult, Uint128,
+    Response, StdError, StdResult, Timestamp, Uint128,
 };
 use cw2::set_contract_version;
 #[cfg(not(feature = "library"))]
@@ -59,7 +59,7 @@ pub fn execute(
     match msg {
         ExecuteMsg::Bet { side } => try_bet(deps, _env, info, side),
         ExecuteMsg::CancelBet { side } => try_cancel_bet(deps, _env, info, side),
-        ExecuteMsg::FinishPoll { winner } => try_finish_poll(deps, info, winner),
+        ExecuteMsg::FinishPoll { winner } => try_finish_poll(deps, _env, info, winner),
         ExecuteMsg::RevertPoll {} => try_revert_poll(deps, info),
         ExecuteMsg::Claim {} => try_claim(deps, info),
     }
@@ -230,7 +230,12 @@ pub fn try_cancel_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> S
         })))
 }
 
-pub fn try_finish_poll(deps: DepsMut, info: MessageInfo, winner: u8) -> StdResult<Response> {
+pub fn try_finish_poll(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    winner: u8,
+) -> StdResult<Response> {
     let mut state = read_state(deps.storage)?;
 
     // only contract's owner can finish poll
@@ -245,9 +250,12 @@ pub fn try_finish_poll(deps: DepsMut, info: MessageInfo, winner: u8) -> StdResul
         return Err(StdError::generic_err("already finished poll"));
     }
 
-    // TODO: end_time check or not?
-    // if end time check => safe but not flexible
-    // else => more flexible policy but more responsiblity to owner *current implementation
+    // cannot finish before poll ends
+    if env.block.time < Timestamp::from_seconds(state.bet_end_time) {
+        return Err(StdError::generic_err(
+            "bet is live now, The poll cannot be finished before the bet ends",
+        ));
+    }
 
     let winner_amount = match SIDE_TOTAL_AMOUNT.may_load(deps.storage, &winner.to_be_bytes())? {
         Some(value) => value,
