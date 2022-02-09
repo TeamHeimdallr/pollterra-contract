@@ -91,6 +91,64 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "reset_poll"
+      ],
+      "properties": {
+        "reset_poll": {
+          "type": "object",
+          "required": [
+            "bet_end_time",
+            "cancel_hold",
+            "poll_name",
+            "start_time"
+          ],
+          "properties": {
+            "bet_end_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "cancel_hold": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "poll_name": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "transfer_owner"
+      ],
+      "properties": {
+        "transfer_owner": {
+          "type": "object",
+          "required": [
+            "new_owner"
+          ],
+          "properties": {
+            "new_owner": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }
