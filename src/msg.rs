@@ -34,6 +34,9 @@ pub enum ExecuteMsg {
     TransferOwner {
         new_owner: String,
     },
+    SetMinimumBet {
+        amount: u128,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
