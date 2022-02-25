@@ -22,6 +22,9 @@ use crate::state::{
 const CONTRACT_NAME: &str = "crates.io:pollterra-contract";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
+const DENOM: &str = "uusd";
+const DEFAULT_MINIMUM_BET: Uint128 = Uint128::new(1_000);
+
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
@@ -40,6 +43,7 @@ pub fn instantiate(
         bet_end_time: msg.bet_end_time,
         cancel_hold: msg.cancel_hold,
         total_amount: Uint128::new(0),
+        minimum_bet: DEFAULT_MINIMUM_BET,
     };
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     STATE.save(deps.storage, &state)?;
@@ -77,6 +81,7 @@ pub fn execute(
             cancel_hold,
         ),
         ExecuteMsg::TransferOwner { new_owner } => try_transfer_owner(deps, info, new_owner),
+        ExecuteMsg::SetMinimumBet { amount } => try_set_minimum_bet(deps, info, amount),
     }
 }
 
@@ -106,7 +111,7 @@ pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResul
             "you need to send some ust in order to bet",
         )),
         1 => {
-            if info.funds[0].denom == "uusd" {
+            if info.funds[0].denom == DENOM {
                 Ok(info.funds[0].amount)
             } else {
                 Err(StdError::generic_err(
@@ -122,6 +127,13 @@ pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResul
         return Err(StdError::generic_err(
             "you need to send some ust in order to bet",
         ));
+    }
+
+    if sent < state.minimum_bet {
+        return Err(StdError::generic_err(format!(
+            "The bet amount should be over {}",
+            state.minimum_bet
+        )));
     }
 
     // add bet amount to BETS state (accumulate single side)
@@ -244,7 +256,7 @@ pub fn try_cancel_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> S
         .add_message(CosmosMsg::Bank(BankMsg::Send {
             to_address: addr.to_string(),
             amount: vec![Coin {
-                denom: "uusd".to_string(),
+                denom: DENOM.to_string(),
                 amount: value,
             }],
         })))
@@ -346,7 +358,7 @@ pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> StdResult<Response> 
             msgs.push(CosmosMsg::Bank(BankMsg::Send {
                 to_address: str::from_utf8(&addr)?.to_string(),
                 amount: vec![Coin {
-                    denom: "uusd".to_string(),
+                    denom: DENOM.to_string(),
                     amount: spent,
                 }],
             }));
@@ -402,7 +414,7 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
         .add_message(CosmosMsg::Bank(BankMsg::Send {
             to_address: addr.to_string(),
             amount: vec![Coin {
-                denom: "uusd".to_string(),
+                denom: DENOM.to_string(),
                 amount: value,
             }],
         })))
@@ -469,7 +481,7 @@ pub fn try_reset_poll(
                     reward_msgs.push(CosmosMsg::Bank(BankMsg::Send {
                         to_address: addr,
                         amount: vec![Coin {
-                            denom: "uusd".to_string(),
+                            denom: DENOM.to_string(),
                             amount: reward,
                         }],
                     }));
@@ -478,11 +490,11 @@ pub fn try_reset_poll(
         });
 
     // Withdrawal
-    let contract_balance = deps.querier.query_balance(&env.contract.address, "uusd")?;
+    let contract_balance = deps.querier.query_balance(&env.contract.address, DENOM)?;
     let withdrawal_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
         to_address: state.owner.to_string(),
         amount: vec![Coin {
-            denom: "uusd".to_string(),
+            denom: DENOM.to_string(),
             amount: contract_balance.amount,
         }],
     });
@@ -530,6 +542,19 @@ pub fn try_transfer_owner(
     store_state(deps.storage, &state)?;
 
     Ok(Response::new().add_attribute("method", "try_transfer_owner"))
+}
+
+pub fn try_set_minimum_bet(deps: DepsMut, info: MessageInfo, amount: u128) -> StdResult<Response> {
+    let mut state = read_state(deps.storage)?;
+    if info.sender != state.owner {
+        return Err(StdError::generic_err(
+            "only the original owner can set the minimum bet amount",
+        ));
+    }
+    state.minimum_bet = Uint128::from(amount);
+    store_state(deps.storage, &state)?;
+
+    Ok(Response::new().add_attribute("method", "try_set_minimun_amount"))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -648,10 +673,10 @@ mod tests {
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-        let msg = ExecuteMsg::Bet { side: 0 };
 
-        let info = mock_info("user", &coins(1_000_000, "uusd"));
-        let _res = execute(deps.as_mut(), env, info, msg).unwrap();
+        let info = mock_info("user", &coins(1_000_000, DENOM));
+        let msg = ExecuteMsg::Bet { side: 0 };
+        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         let res = query(
             deps.as_ref(),
@@ -664,6 +689,11 @@ mod tests {
         .unwrap();
         let value: UserBetResponse = from_binary(&res).unwrap();
         assert_eq!(Uint128::new(1_000_000), value.amount);
+
+        let info = mock_info("user0", &coins(DEFAULT_MINIMUM_BET.u128() - 1, DENOM));
+        let msg = ExecuteMsg::Bet { side: 1 };
+        let res = execute(deps.as_mut(), env, info, msg);
+        assert!(res.is_err());
     }
 
     #[test]
@@ -682,15 +712,15 @@ mod tests {
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
         let msg = ExecuteMsg::Bet { side: 0 };
-        let info = mock_info("user1", &coins(1_000_000, "uusd"));
+        let info = mock_info("user1", &coins(1_000_000, DENOM));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         let msg = ExecuteMsg::Bet { side: 0 };
-        let info = mock_info("user2", &coins(2_000_000, "uusd"));
+        let info = mock_info("user2", &coins(2_000_000, DENOM));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         let msg = ExecuteMsg::Bet { side: 1 };
-        let info = mock_info("user2", &coins(8_000_000, "uusd"));
+        let info = mock_info("user2", &coins(8_000_000, DENOM));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         let msg = ExecuteMsg::RevertPoll {};
@@ -726,7 +756,7 @@ mod tests {
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
         let msg = ExecuteMsg::Bet { side: 0 };
-        let info = mock_info("user1", &coins(1_000_000, "uusd"));
+        let info = mock_info("user1", &coins(1_000_000, DENOM));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         let msg = ExecuteMsg::CancelBet { side: 0 };
@@ -762,11 +792,11 @@ mod tests {
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
         let msg = ExecuteMsg::Bet { side: 0 };
-        let info = mock_info("user1", &coins(1_000_000, "uusd"));
+        let info = mock_info("user1", &coins(1_000_000, DENOM));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         let msg = ExecuteMsg::Bet { side: 1 };
-        let info = mock_info("user2", &coins(2_000_000, "uusd"));
+        let info = mock_info("user2", &coins(2_000_000, DENOM));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         env.block.time = Timestamp::from_seconds(2000000000);
@@ -803,11 +833,11 @@ mod tests {
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
         let msg = ExecuteMsg::Bet { side: 0 };
-        let info = mock_info("user1", &coins(1_000_000, "uusd"));
+        let info = mock_info("user1", &coins(1_000_000, DENOM));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         let msg = ExecuteMsg::Bet { side: 1 };
-        let info = mock_info("user2", &coins(2_000_000, "uusd"));
+        let info = mock_info("user2", &coins(2_000_000, DENOM));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         env.block.time = Timestamp::from_seconds(2000000000);
@@ -834,7 +864,7 @@ mod tests {
             CosmosMsg::Bank(BankMsg::Send {
                 to_address: "user1".to_string(),
                 amount: vec![Coin {
-                    denom: "uusd".to_string(),
+                    denom: DENOM.to_string(),
                     amount: Uint128::new(2970000)
                 }]
             }),
@@ -854,40 +884,6 @@ mod tests {
     }
 
     #[test]
-    fn transfer_owner() {
-        let mut deps = mock_dependencies(&[]);
-        let mut env = mock_env();
-        env.block.height = 6340000;
-
-        let msg = InstantiateMsg {
-            poll_name: "test_poll".to_string(),
-            start_time: 6300000,
-            bet_end_time: 6400000,
-            cancel_hold: 6390000,
-        };
-
-        let info = mock_info("creator", &[]);
-        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-
-        let msg = QueryMsg::Config {};
-        let res = query(deps.as_ref(), env.clone(), msg).unwrap();
-        assert_eq!(
-            "creator",
-            from_binary::<State>(&res).unwrap().owner.as_str()
-        );
-
-        let msg = ExecuteMsg::TransferOwner {
-            new_owner: String::from("user1"),
-        };
-        let info = mock_info("creator", &[]);
-        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
-
-        let msg = QueryMsg::Config {};
-        let res = query(deps.as_ref(), env.clone(), msg).unwrap();
-        assert_eq!("user1", from_binary::<State>(&res).unwrap().owner.as_str());
-    }
-
-    #[test]
     fn reset_poll() {
         let mut deps = mock_dependencies(&[]);
         let mut env = mock_env();
@@ -903,11 +899,11 @@ mod tests {
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
         let msg = ExecuteMsg::Bet { side: 0 };
-        let info = mock_info("user1", &coins(1_000_000, "uusd"));
+        let info = mock_info("user1", &coins(1_000_000, DENOM));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         let msg = ExecuteMsg::Bet { side: 1 };
-        let info = mock_info("user2", &coins(2_000_000, "uusd"));
+        let info = mock_info("user2", &coins(2_000_000, DENOM));
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         env.block.time = Timestamp::from_seconds(2000000000);
@@ -936,7 +932,7 @@ mod tests {
             CosmosMsg::Bank(BankMsg::Send {
                 to_address: "user1".to_string(),
                 amount: vec![Coin {
-                    denom: "uusd".to_string(),
+                    denom: DENOM.to_string(),
                     amount: Uint128::new(2970000)
                 }]
             }),
@@ -947,7 +943,7 @@ mod tests {
             CosmosMsg::Bank(BankMsg::Send {
                 to_address: "creator".to_string(),
                 amount: vec![Coin {
-                    denom: "uusd".to_string(),
+                    denom: DENOM.to_string(),
                     amount: Uint128::zero() // Can't query balance of this contract in local
                 }]
             }),
@@ -960,5 +956,59 @@ mod tests {
             .range(None, None, Order::Ascending)
             .count();
         assert_eq!(2, cnt); // STATE, CONTRACT
+    }
+
+    #[test]
+    fn change_config() {
+        let mut deps = mock_dependencies(&[]);
+        let mut env = mock_env();
+        env.block.height = 6340000;
+
+        let msg = InstantiateMsg {
+            poll_name: "test_poll".to_string(),
+            start_time: 6300000,
+            bet_end_time: 6400000,
+            cancel_hold: 6390000,
+        };
+
+        let info = mock_info("creator", &[]);
+        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        // set_minimum_bet
+        let msg = QueryMsg::Config {};
+        let res = query(deps.as_ref(), env.clone(), msg).unwrap();
+        assert_eq!(
+            DEFAULT_MINIMUM_BET,
+            from_binary::<State>(&res).unwrap().minimum_bet
+        );
+
+        let info = mock_info("creator", &[]);
+        let msg = ExecuteMsg::SetMinimumBet { amount: 2_000u128 };
+        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+        let msg = QueryMsg::Config {};
+        let res = query(deps.as_ref(), env.clone(), msg).unwrap();
+        assert_eq!(
+            Uint128::from(2_000u128),
+            from_binary::<State>(&res).unwrap().minimum_bet
+        );
+
+        // transfer_owner
+        let msg = QueryMsg::Config {};
+        let res = query(deps.as_ref(), env.clone(), msg).unwrap();
+        assert_eq!(
+            "creator",
+            from_binary::<State>(&res).unwrap().owner.as_str()
+        );
+
+        let msg = ExecuteMsg::TransferOwner {
+            new_owner: String::from("user1"),
+        };
+        let info = mock_info("creator", &[]);
+        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+        let msg = QueryMsg::Config {};
+        let res = query(deps.as_ref(), env.clone(), msg).unwrap();
+        assert_eq!("user1", from_binary::<State>(&res).unwrap().owner.as_str());
     }
 }

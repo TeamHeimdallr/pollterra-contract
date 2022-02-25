@@ -15,6 +15,7 @@ pub struct State {
     pub bet_end_time: u64,
     pub cancel_hold: u64,
     pub total_amount: Uint128,
+    pub minimum_bet: Uint128,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

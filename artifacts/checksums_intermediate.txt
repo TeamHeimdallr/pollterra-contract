@@ -1,1 +1,1 @@
-932dfa407e96881df56a133815f45fa8d670f466dc787c9a227644ec2a2dace5  ./target/wasm32-unknown-unknown/release/pollterra_contract.wasm
+00bc91db3a76f79da2efdc1f586710656b1c2b9f2ab2cf4d8e2544afda4565c8  ./target/wasm32-unknown-unknown/release/pollterra_contract.wasm

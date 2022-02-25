@@ -6,6 +6,7 @@
     "bet_end_time",
     "bet_live",
     "cancel_hold",
+    "minimum_bet",
     "owner",
     "poll_name",
     "reward_live",
@@ -26,6 +27,9 @@
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
+    },
+    "minimum_bet": {
+      "$ref": "#/definitions/Uint128"
     },
     "owner": {
       "$ref": "#/definitions/Addr"
