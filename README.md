@@ -2,5 +2,5 @@
 
 |-|-|
 |------|---|
-|code ID|41851|
-|example instance contract address|terra1ejh2dw7tlrhghexep2su7pw7xw5733r2ruyw8x|
+|code ID|47646|
+|example instance contract address|terra1awwxsufkjtjefyel5ur20nnk07mxzr9tmre7xe|
