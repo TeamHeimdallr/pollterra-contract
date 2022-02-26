@@ -1,2 +1,1 @@
-a143fd9e406ada4b81d76061f50babc9970573c6be7c8d04e96e08709536e1e1  pollterra_contract.wasm
 29b6d4a577f05feb9f112270b4af9381af4eec71bfcd47a999381ff0f1c57733  prediction_poll.wasm
