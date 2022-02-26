@@ -9,6 +9,7 @@ jobs:
   test:
     name: Test Suite && Lints
     runs-on: ubuntu-latest
+    ## TODO : need to bring the project list automatically
     strategy:
       matrix:
         contract:
