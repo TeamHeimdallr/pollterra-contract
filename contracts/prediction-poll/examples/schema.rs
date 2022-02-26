@@ -3,8 +3,8 @@ use std::fs::create_dir_all;
 
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
-use pollterra_contract::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use pollterra_contract::state::State;
+use prediction_poll::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use prediction_poll::state::State;
 
 fn main() {
     let mut out_dir = current_dir().unwrap();
