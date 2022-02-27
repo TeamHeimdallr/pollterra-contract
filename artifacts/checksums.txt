@@ -1,1 +1,0 @@
-a143fd9e406ada4b81d76061f50babc9970573c6be7c8d04e96e08709536e1e1  pollterra_contract.wasm

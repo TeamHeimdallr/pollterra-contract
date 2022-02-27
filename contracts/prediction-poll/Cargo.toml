@@ -1,5 +1,5 @@
 [package]
-name = "pollterra-contract"
+name = "prediction-poll"
 version = "0.1.0"
 authors = ["eunho-lee <eunho.ambition@gmail.com>"]
 edition = "2018"

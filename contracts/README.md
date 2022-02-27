@@ -1,0 +1,1 @@
+Don't forget to add the project name to jobs.test.strategy.matrix.contract of ../.github/workflows/Basic.yml

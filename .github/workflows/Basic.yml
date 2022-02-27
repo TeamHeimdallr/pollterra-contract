@@ -7,8 +7,14 @@ name: Basic
 jobs:
 
   test:
-    name: Test Suite
+    name: Test Suite && Lints
     runs-on: ubuntu-latest
+    ## TODO : need to bring the project list automatically
+    strategy:
+      matrix:
+        contract:
+          - prediction-poll
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -20,12 +26,13 @@ jobs:
           toolchain: 1.51.0
           target: wasm32-unknown-unknown
           override: true
+          components: rustfmt, clippy
 
       - name: Run unit tests
         uses: actions-rs/cargo@v1
         with:
           command: unit-test
-          args: --locked
+          args: --locked --manifest-path ./contracts/${{matrix.contract}}/Cargo.toml
         env:
           RUST_BACKTRACE: 1
 
@@ -33,36 +40,21 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: wasm
-          args: --locked
+          args: --locked --manifest-path ./contracts/${{matrix.contract}}/Cargo.toml
         env:
           RUSTFLAGS: "-C link-arg=-s"
-
-  lints:
-    name: Lints
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: 1.51.0
-          override: true
-          components: rustfmt, clippy
 
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --all -- --check
+          args: --manifest-path ./contracts/${{matrix.contract}}/Cargo.toml -- --check
 
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: -- -D warnings
+          args: --manifest-path ./contracts/${{matrix.contract}}/Cargo.toml -- -D warnings
 
       # TODO: we should check
       # CHANGES_IN_REPO=$(git status --porcelain)
@@ -71,4 +63,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: schema
-          args: --locked
+          args: --locked --manifest-path ./contracts/${{matrix.contract}}/Cargo.toml
