@@ -1,1 +1,1 @@
-f5607aa41e6094916868762eafd8c10e4c9749fbf9f83ecf5a0ddb9111493b1d  target/wasm32-unknown-unknown/release/prediction_poll.wasm
+6f986d7db6ae38947ac0bd70bd081474afd5623fe648cb64ff7be1b2c6ee24b6  target/wasm32-unknown-unknown/release/prediction_poll.wasm
