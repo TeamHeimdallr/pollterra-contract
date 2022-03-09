@@ -4,17 +4,11 @@
   "type": "object",
   "required": [
     "bet_end_time",
-    "cancel_hold",
     "poll_name",
     "start_time"
   ],
   "properties": {
     "bet_end_time": {
-      "type": "integer",
-      "format": "uint64",
-      "minimum": 0.0
-    },
-    "cancel_hold": {
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0

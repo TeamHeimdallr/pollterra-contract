@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExecuteMsg",
-  "anyOf": [
+  "oneOf": [
     {
       "type": "object",
       "required": [
@@ -9,28 +9,6 @@
       ],
       "properties": {
         "bet": {
-          "type": "object",
-          "required": [
-            "side"
-          ],
-          "properties": {
-            "side": {
-              "type": "integer",
-              "format": "uint8",
-              "minimum": 0.0
-            }
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
-        "cancel_bet"
-      ],
-      "properties": {
-        "cancel_bet": {
           "type": "object",
           "required": [
             "side"
@@ -88,6 +66,80 @@
       "properties": {
         "claim": {
           "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "reset_poll"
+      ],
+      "properties": {
+        "reset_poll": {
+          "type": "object",
+          "required": [
+            "bet_end_time",
+            "poll_name",
+            "start_time"
+          ],
+          "properties": {
+            "bet_end_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "poll_name": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "transfer_owner"
+      ],
+      "properties": {
+        "transfer_owner": {
+          "type": "object",
+          "required": [
+            "new_owner"
+          ],
+          "properties": {
+            "new_owner": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "set_minimum_bet"
+      ],
+      "properties": {
+        "set_minimum_bet": {
+          "type": "object",
+          "required": [
+            "amount"
+          ],
+          "properties": {
+            "amount": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            }
+          }
         }
       },
       "additionalProperties": false
