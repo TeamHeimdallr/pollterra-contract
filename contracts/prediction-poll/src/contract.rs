@@ -41,7 +41,6 @@ pub fn instantiate(
         poll_name: msg.poll_name,
         start_time: msg.start_time,
         bet_end_time: msg.bet_end_time,
-        cancel_hold: msg.cancel_hold,
         total_amount: Uint128::new(0),
         minimum_bet: DEFAULT_MINIMUM_BET,
     };
@@ -62,7 +61,6 @@ pub fn execute(
 ) -> StdResult<Response> {
     match msg {
         ExecuteMsg::Bet { side } => try_bet(deps, _env, info, side),
-        ExecuteMsg::CancelBet { side } => try_cancel_bet(deps, _env, info, side),
         ExecuteMsg::FinishPoll { winner } => try_finish_poll(deps, _env, info, winner),
         ExecuteMsg::RevertPoll {} => try_revert_poll(deps, info),
         ExecuteMsg::Claim {} => try_claim(deps, info),
@@ -70,16 +68,7 @@ pub fn execute(
             poll_name,
             start_time,
             bet_end_time,
-            cancel_hold,
-        } => try_reset_poll(
-            deps,
-            _env,
-            info,
-            poll_name,
-            start_time,
-            bet_end_time,
-            cancel_hold,
-        ),
+        } => try_reset_poll(deps, _env, info, poll_name, start_time, bet_end_time),
         ExecuteMsg::TransferOwner { new_owner } => try_transfer_owner(deps, info, new_owner),
         ExecuteMsg::SetMinimumBet { amount } => try_set_minimum_bet(deps, info, amount),
     }
@@ -190,76 +179,6 @@ pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResul
         ("side", &side.to_string()),
         ("amount", &sent.to_string()),
     ]))
-}
-
-pub fn try_cancel_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResult<Response> {
-    let addr = info.sender;
-
-    let mut state = read_state(deps.storage)?;
-
-    // exceeds cancel threshold block time
-    if env.block.time > Timestamp::from_seconds(state.cancel_hold) {
-        return Err(StdError::generic_err(format!(
-            "cannot cancel after {} block time",
-            state.cancel_hold
-        )));
-    }
-
-    // BETS State load
-    let value = match BETS.may_load(deps.storage, (&side.to_be_bytes(), &addr))? {
-        None => Uint128::zero(),
-        Some(amount) => amount,
-    };
-
-    if value == Uint128::zero() {
-        return Err(StdError::generic_err("there's no bet to cancel"));
-    }
-
-    BETS.update(
-        deps.storage,
-        (&side.to_be_bytes(), &addr),
-        |_exists| -> StdResult<Uint128> { Ok(Uint128::zero()) },
-    )?;
-
-    USER_TOTAL_AMOUNT.update(deps.storage, &addr, |exists| -> StdResult<Uint128> {
-        match exists {
-            Some(bet) => {
-                let mut modified = bet;
-                modified -= value;
-                Ok(modified)
-            }
-            None => Ok(Uint128::zero()),
-        }
-    })?;
-
-    SIDE_TOTAL_AMOUNT.update(
-        deps.storage,
-        &side.to_be_bytes(),
-        |exists| -> StdResult<Uint128> {
-            match exists {
-                Some(bet) => {
-                    let mut modified = bet;
-                    modified -= value;
-                    Ok(modified)
-                }
-                None => Ok(Uint128::zero()),
-            }
-        },
-    )?;
-
-    state.total_amount -= value;
-    store_state(deps.storage, &state)?;
-
-    // TODO: deduct tax?
-    Ok(Response::new()
-        .add_attribute("method", "try_cancel_bet")
-        .add_message(CosmosMsg::Bank(BankMsg::Send {
-            to_address: addr.to_string(),
-            amount: vec![Coin {
-                denom: DENOM.to_string(),
-                amount: value,
-            }],
-        })))
 }
 
 pub fn try_finish_poll(
@@ -455,7 +374,6 @@ pub fn try_reset_poll(
     poll_name: String,
     start_time: u64,
     bet_end_time: u64,
-    cancel_hold: u64,
 ) -> StdResult<Response> {
     let mut state = read_state(deps.storage)?;
     if info.sender != state.owner {
@@ -515,7 +433,6 @@ pub fn try_reset_poll(
     state.poll_name = poll_name;
     state.start_time = start_time;
     state.bet_end_time = bet_end_time;
-    state.cancel_hold = cancel_hold;
     state.total_amount = Uint128::zero();
 
     STATE.save(deps.storage, &state)?;
@@ -642,7 +559,6 @@ mod tests {
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
-            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
 
@@ -656,7 +572,6 @@ mod tests {
         assert_eq!("test_poll", value.poll_name);
         assert_eq!(1643673600, value.start_time);
         assert_eq!(1653673600, value.bet_end_time);
-        assert_eq!(1650673600, value.cancel_hold);
     }
 
     #[test]
@@ -669,7 +584,6 @@ mod tests {
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
-            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -706,7 +620,6 @@ mod tests {
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
-            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -741,42 +654,6 @@ mod tests {
     }
 
     #[test]
-    fn proper_cancel() {
-        let mut deps = mock_dependencies(&[]);
-        let mut env = mock_env();
-        env.block.time = Timestamp::from_seconds(1649673600);
-
-        let msg = InstantiateMsg {
-            poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
-            bet_end_time: 1653673600,
-            cancel_hold: 1650673600,
-        };
-        let info = mock_info("creator", &[]);
-        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-
-        let msg = ExecuteMsg::Bet { side: 0 };
-        let info = mock_info("user1", &coins(1_000_000, DENOM));
-        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
-
-        let msg = ExecuteMsg::CancelBet { side: 0 };
-        let info = mock_info("user1", &[]);
-        let _res = execute(deps.as_mut(), env, info, msg).unwrap();
-
-        let res = query(
-            deps.as_ref(),
-            mock_env(),
-            QueryMsg::UserBet {
-                address: "user1".to_string(),
-                side: 0,
-            },
-        )
-        .unwrap();
-        let value: UserBetResponse = from_binary(&res).unwrap();
-        assert_eq!(Uint128::new(0), value.amount);
-    }
-
-    #[test]
     fn proper_finish() {
         let mut deps = mock_dependencies(&[]);
         let mut env = mock_env();
@@ -786,7 +663,6 @@ mod tests {
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
-            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -827,7 +703,6 @@ mod tests {
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
-            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -893,7 +768,6 @@ mod tests {
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
-            cancel_hold: 1650673600,
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -924,7 +798,6 @@ mod tests {
             poll_name: "ended_poll".to_string(),
             start_time: 2643673600,
             bet_end_time: 2653673600,
-            cancel_hold: 2650673600,
         };
         let info = mock_info("creator", &[]);
         let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
@@ -968,7 +841,6 @@ mod tests {
             poll_name: "test_poll".to_string(),
             start_time: 6300000,
             bet_end_time: 6400000,
-            cancel_hold: 6390000,
         };
 
         let info = mock_info("creator", &[]);

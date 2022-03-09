@@ -8,16 +8,12 @@ pub struct InstantiateMsg {
     pub poll_name: String,
     pub start_time: u64,
     pub bet_end_time: u64,
-    pub cancel_hold: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     Bet {
-        side: u8,
-    },
-    CancelBet {
         side: u8,
     },
     FinishPoll {
@@ -29,7 +25,6 @@ pub enum ExecuteMsg {
         poll_name: String,
         start_time: u64,
         bet_end_time: u64,
-        cancel_hold: u64,
     },
     TransferOwner {
         new_owner: String,

@@ -13,7 +13,6 @@ pub struct State {
     pub poll_name: String,
     pub start_time: u64,
     pub bet_end_time: u64,
-    pub cancel_hold: u64,
     pub total_amount: Uint128,
     pub minimum_bet: Uint128,
 }
