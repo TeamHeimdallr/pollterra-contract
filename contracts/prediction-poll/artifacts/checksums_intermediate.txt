@@ -1,1 +1,0 @@
-5c65fc8a6b8df2a686203ca943bf654e6f5aa82d920c6fedb16acaec26b4c970  ./target/wasm32-unknown-unknown/release/prediction_poll.wasm

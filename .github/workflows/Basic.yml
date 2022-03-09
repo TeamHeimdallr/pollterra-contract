@@ -9,6 +9,52 @@ jobs:
   test:
     name: Test Suite && Lints
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.51.0
+          target: wasm32-unknown-unknown
+          override: true
+          components: rustfmt, clippy
+
+      - name: Run unit tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: unit-test
+          args: --locked
+        env:
+          RUST_BACKTRACE: 1
+
+      - name: Compile WASM contract
+        uses: actions-rs/cargo@v1
+        with:
+          command: wasm
+          args: --locked
+        env:
+          RUSTFLAGS: "-C link-arg=-s"
+
+      - name: Run cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check
+
+      - name: Run cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+
+  schema:
+    name: Cargo schema
+    runs-on: ubuntu-latest
+
     ## TODO : need to bring the project list automatically
     strategy:
       matrix:
@@ -28,33 +74,13 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-      - name: Run unit tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: unit-test
-          args: --locked --manifest-path ./contracts/${{matrix.contract}}/Cargo.toml
-        env:
-          RUST_BACKTRACE: 1
-
       - name: Compile WASM contract
         uses: actions-rs/cargo@v1
         with:
           command: wasm
-          args: --locked --manifest-path ./contracts/${{matrix.contract}}/Cargo.toml
+          args: --locked
         env:
           RUSTFLAGS: "-C link-arg=-s"
-
-      - name: Run cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --manifest-path ./contracts/${{matrix.contract}}/Cargo.toml -- --check
-
-      - name: Run cargo clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --manifest-path ./contracts/${{matrix.contract}}/Cargo.toml -- -D warnings
 
       # TODO: we should check
       # CHANGES_IN_REPO=$(git status --porcelain)
