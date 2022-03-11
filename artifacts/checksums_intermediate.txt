@@ -1,1 +1,2 @@
+971beeedf367ce5f6410eabdc8f018ace5ef5e8a2b12250ad1c9afa1d0907ca7  target/wasm32-unknown-unknown/release/governance.wasm
 6f986d7db6ae38947ac0bd70bd081474afd5623fe648cb64ff7be1b2c6ee24b6  target/wasm32-unknown-unknown/release/prediction_poll.wasm

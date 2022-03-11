@@ -1,12 +1,13 @@
 [package]
-name = "prediction-poll"
+name = "governance"
 version = "0.1.0"
-authors = ["eunho-lee <eunho.ambition@gmail.com>"]
+authors = ["ehlee@hubblex.io", "admin@hubblex.io"]
 edition = "2018"
+license = "MIT"
 
 exclude = [
   # Those files are rust-optimizer artifacts. You might want to commit them for convenience but they should not be part of the source code publication.
-  "contract.wasm",
+  "gov.wasm",
   "hash.txt",
 ]
 
@@ -22,13 +23,18 @@ backtraces = ["cosmwasm-std/backtraces"]
 library = []
 
 [dependencies]
-cosmwasm-std = { version = "0.16.2" }
+cw20 = { version = "0.8.0-rc2" }
+cosmwasm-std = { version = "0.16.0" }
 cosmwasm-storage = { version = "0.16.0" }
 cw-storage-plus = "0.8.0"
-cw2 = "0.8.1"
 schemars = "0.8.3"
 serde = { version = "1.0.127", default-features = false, features = ["derive"] }
+terraswap = { version = "2.4.0" }
 thiserror = { version = "1.0.26" }
+pollterra_token = { version = "0.1.0", path = "../../packages/pollterra_token" }
+terra-cosmwasm = { version = "2.2.0"}
 
 [dev-dependencies]
 cosmwasm-schema = { version = "0.16.0" }
+cw20-base = { version = "0.8", features = ["library"] }
+cw-multi-test = { version = "0.8"}

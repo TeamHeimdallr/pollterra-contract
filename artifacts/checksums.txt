@@ -1,1 +1,2 @@
+b6a237fd6a4170740db04bedc22c5513891828494820e3b8fbed3fcaedca10c5  governance.wasm
 ded15104bcbebe534661cc8f80c3cd0f7ebec5a49393b10ff6ad9e5d17c30408  prediction_poll.wasm
