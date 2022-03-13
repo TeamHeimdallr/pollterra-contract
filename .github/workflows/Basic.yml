@@ -63,6 +63,7 @@ jobs:
       matrix:
         contract:
           - prediction-poll
+          - meta-contract
 
     steps:
       - name: Checkout sources
