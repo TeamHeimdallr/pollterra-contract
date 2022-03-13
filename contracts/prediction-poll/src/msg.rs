@@ -1,14 +1,10 @@
 use crate::state::{BetStatus, State};
 use cosmwasm_std::Uint128;
+use messages::msg::PollInstantiateMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct InstantiateMsg {
-    pub poll_name: String,
-    pub start_time: u64,
-    pub bet_end_time: u64,
-}
+pub type InstantiateMsg = PollInstantiateMsg;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]

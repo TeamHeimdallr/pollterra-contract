@@ -1,1 +1,2 @@
-6f986d7db6ae38947ac0bd70bd081474afd5623fe648cb64ff7be1b2c6ee24b6  target/wasm32-unknown-unknown/release/prediction_poll.wasm
+8381351c34b2970fd5a45357bbb1a0706990443e8856637eb6b0f4aa30b3b707  target/wasm32-unknown-unknown/release/meta_contract.wasm
+be6c542cf79f1ac0a5ca4d802e2a668db6860551b01bacc010454e284b159256  target/wasm32-unknown-unknown/release/prediction_poll.wasm

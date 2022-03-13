@@ -14,14 +14,17 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v2
 
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: 1.51.0
+          toolchain: 1.56.0
           target: wasm32-unknown-unknown
           override: true
-          components: rustfmt, clippy
+          components: rustfmt, clippy, rust-docs
 
       - name: Run unit tests
         uses: actions-rs/cargo@v1
@@ -60,19 +63,23 @@ jobs:
       matrix:
         contract:
           - prediction-poll
+          - meta-contract
 
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
 
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: 1.51.0
+          toolchain: 1.56.0
           target: wasm32-unknown-unknown
           override: true
-          components: rustfmt, clippy
+          components: rustfmt, clippy, rust-docs
 
       - name: Compile WASM contract
         uses: actions-rs/cargo@v1
