@@ -249,7 +249,7 @@ fn fails_create_poll_invalid_short_title() {
 
     let msg = create_poll_msg("a".to_string(), "valid description".to_string(), None, None);
     let info = mock_info(VOTING_TOKEN, &[]);
-    match execute(deps.as_mut(), mock_env(), info.clone(), msg) {
+    match execute(deps.as_mut(), mock_env(), info, msg) {
         Ok(_) => panic!("Must return error"),
         Err(ContractError::PollTitleInvalidShort(..)) => (),
         Err(_) => panic!("Unknown error"),
@@ -266,7 +266,7 @@ fn fails_create_poll_invalid_long_title() {
         String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do e");
     let msg = create_poll_msg(invalid_title, "valid description".to_string(), None, None);
     let info = mock_info(VOTING_TOKEN, &[]);
-    match execute(deps.as_mut(), mock_env(), info.clone(), msg) {
+    match execute(deps.as_mut(), mock_env(), info, msg) {
         Ok(_) => panic!("Must return error"),
         Err(ContractError::PollTitleInvalidLong(..)) => (),
         Err(_) => panic!("Unknown error"),
@@ -281,7 +281,7 @@ fn fails_create_poll_invalid_short_description() {
 
     let msg = create_poll_msg("valid title".to_string(), "abc".to_string(), None, None);
     let info = mock_info(VOTING_TOKEN, &[]);
-    match execute(deps.as_mut(), mock_env(), info.clone(), msg) {
+    match execute(deps.as_mut(), mock_env(), info, msg) {
         Ok(_) => panic!("Must return error"),
         Err(ContractError::PollDescriptionInvalidShort(..)) => (),
         Err(_) => panic!("Unknown error"),
@@ -307,7 +307,7 @@ fn fails_create_poll_invalid_long_description() {
     aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem \
     sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, \
     adipisci velit, sed quia non numquam eius modi tempora ";
-    let long_desc = s1.to_owned().clone() + s2 + s3;
+    let long_desc = s1.to_owned() + s2 + s3;
 
     let msg = create_poll_msg("valid title".to_string(), long_desc, None, None);
     let info = mock_info(VOTING_TOKEN, &[]);
@@ -332,7 +332,7 @@ fn fails_create_poll_invalid_short_link() {
         None,
     );
     let info = mock_info(VOTING_TOKEN, &[]);
-    match execute(deps.as_mut(), mock_env(), info.clone(), msg) {
+    match execute(deps.as_mut(), mock_env(), info, msg) {
         Ok(_) => panic!("Must return error"),
         Err(ContractError::PollLinkInvalidShort(..)) => (),
         Err(_) => panic!("Unknown error"),
@@ -888,7 +888,7 @@ fn successful_end_poll() {
     // But the data is still in the store
     let voter_addr_raw = deps.api.addr_canonicalize(TEST_VOTER).unwrap();
     let voter = poll_voter_read(&deps.storage, 1u64)
-        .load(&voter_addr_raw.as_slice())
+        .load(voter_addr_raw.as_slice())
         .unwrap();
     assert_eq!(
         voter,
@@ -899,7 +899,7 @@ fn successful_end_poll() {
     );
 
     let token_manager = bank_read(&deps.storage)
-        .load(&voter_addr_raw.as_slice())
+        .load(voter_addr_raw.as_slice())
         .unwrap();
     assert_eq!(
         token_manager.locked_balance,
@@ -2086,7 +2086,7 @@ fn fails_query_poll() {
 
     let msg = create_poll_msg("test".to_string(), "test".to_string(), None, None);
 
-    execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+    execute(deps.as_mut(), env, info, msg).unwrap();
 
     match query(deps.as_ref(), mock_env(), QueryMsg::Poll { poll_id: 2 }) {
         Ok(_) => panic!("Must return error"),

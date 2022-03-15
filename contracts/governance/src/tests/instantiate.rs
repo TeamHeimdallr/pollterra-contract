@@ -61,7 +61,7 @@ fn successful_initialization() {
         config,
         Config {
             pollterra_token: CanonicalAddr::from(vec![]),
-            owner: deps.api.addr_canonicalize(&TEST_CREATOR).unwrap(),
+            owner: deps.api.addr_canonicalize(TEST_CREATOR).unwrap(),
             quorum: Decimal::percent(DEFAULT_QUORUM),
             threshold: Decimal::percent(DEFAULT_THRESHOLD),
             voting_period: DEFAULT_VOTING_PERIOD,
@@ -79,7 +79,7 @@ fn successful_initialization() {
     let config: Config = config_read(deps.as_ref().storage).load().unwrap();
     assert_eq!(
         config.pollterra_token,
-        deps.api.addr_canonicalize(&VOTING_TOKEN).unwrap()
+        deps.api.addr_canonicalize(VOTING_TOKEN).unwrap()
     );
 
     let state: State = state_read(deps.as_ref().storage).load().unwrap();
@@ -106,7 +106,7 @@ fn invalid_quorum_fails_initialization() {
     msg.quorum = Decimal::from_ratio(2u128, 1u128);
 
     let info = mock_info(TEST_CREATOR, &coins(2, VOTING_TOKEN));
-    instantiate(deps.as_mut(), mock_env(), info.clone(), msg).unwrap();
+    instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 }
 
 #[test]
@@ -118,7 +118,7 @@ fn invalid_threshold_fails_initialization() {
     msg.threshold = Decimal::from_ratio(2u128, 1u128);
 
     let info = mock_info(TEST_CREATOR, &coins(2, VOTING_TOKEN));
-    instantiate(deps.as_mut(), mock_env(), info.clone(), msg).unwrap();
+    instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 }
 
 #[test]
@@ -130,7 +130,7 @@ fn invalid_poll_period_fails_initialization() {
     msg.timelock_period = 20000u64;
 
     let info = mock_info(TEST_CREATOR, &coins(2, VOTING_TOKEN));
-    let res = instantiate(deps.as_mut(), mock_env(), info.clone(), msg);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg);
     match res {
         Ok(_) => panic!("Must return error"),
         Err(ContractError::InvalidPollPeriod {}) => (),

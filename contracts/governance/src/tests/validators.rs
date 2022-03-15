@@ -220,7 +220,7 @@ fn invalid_long_poll_description() {
     aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem \
     sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, \
     adipisci velit, sed quia non numquam eius modi tempora ";
-    let desc = s1.to_owned().clone() + s2 + s3;
+    let desc = s1.to_owned() + s2 + s3;
 
     assert_eq!(desc.len(), MAX_DESC_LENGTH + 1);
     validate_poll_description(&desc).unwrap();
