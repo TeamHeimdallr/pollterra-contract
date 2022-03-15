@@ -90,7 +90,9 @@ pub fn execute(
         // Execute the associated messages of a passed poll
         ExecuteMsg::ExecutePoll { poll_id } => execute_poll(deps, _env, poll_id),
         ExecuteMsg::ExpirePoll { poll_id } => expire_poll(deps, _env, poll_id),
-        ExecuteMsg::RegisterContracts { pollterra_token } => register_contracts(deps, pollterra_token),
+        ExecuteMsg::RegisterContracts { pollterra_token } => {
+            register_contracts(deps, pollterra_token)
+        }
         ExecuteMsg::SnapshotPoll { poll_id } => snapshot_poll(deps, _env, poll_id),
         ExecuteMsg::WithdrawVotingTokens { amount } => withdraw_voting_tokens(deps, info, amount),
         ExecuteMsg::UpdateConfig {
@@ -153,7 +155,10 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> Result<Binary, ContractErr
 
 // ExecutionMsg handlers
 
-pub fn register_contracts(deps: DepsMut, pollterra_token: String) -> Result<Response, ContractError> {
+pub fn register_contracts(
+    deps: DepsMut,
+    pollterra_token: String,
+) -> Result<Response, ContractError> {
     let mut config: Config = config_read(deps.storage).load()?;
     if config.pollterra_token != CanonicalAddr::from(vec![]) {
         return Err(ContractError::Unauthorized {});
