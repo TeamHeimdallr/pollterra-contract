@@ -5,7 +5,6 @@ authors = ["ehlee@hubblex.io", "admin@hubblex.io"]
 edition = "2018"
 description = "Common helpers for other pollterra-token specs"
 license = "MIT"
-repository = "https://github.com/Hubble-X/pollterra-token"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

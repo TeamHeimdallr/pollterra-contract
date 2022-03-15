@@ -1,9 +1,8 @@
 [package]
 name = "governance"
 version = "0.1.0"
-authors = ["ehlee@hubblex.io", "admin@hubblex.io"]
+authors = ["eunho-lee <eunho.ambition@gmail.com>"]
 edition = "2018"
-license = "MIT"
 
 exclude = [
   # Those files are rust-optimizer artifacts. You might want to commit them for convenience but they should not be part of the source code publication.
@@ -31,7 +30,7 @@ schemars = "0.8.3"
 serde = { version = "1.0.127", default-features = false, features = ["derive"] }
 terraswap = { version = "2.4.0" }
 thiserror = { version = "1.0.26" }
-pollterra_token = { version = "0.1.0", path = "../../packages/pollterra_token" }
+pollterra_token = { path = "../../packages/pollterra_token", version = "0.1.0" }
 terra-cosmwasm = { version = "2.2.0"}
 
 [dev-dependencies]
