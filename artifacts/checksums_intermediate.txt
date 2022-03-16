@@ -1,2 +1,2 @@
-971beeedf367ce5f6410eabdc8f018ace5ef5e8a2b12250ad1c9afa1d0907ca7  target/wasm32-unknown-unknown/release/governance.wasm
-6f986d7db6ae38947ac0bd70bd081474afd5623fe648cb64ff7be1b2c6ee24b6  target/wasm32-unknown-unknown/release/prediction_poll.wasm
+ecf89ad236954384023de8bd49cc968bef1ad136c7a703d72874bc0640125f05  target/wasm32-unknown-unknown/release/governance.wasm
+4c24e8458c7cd22a896336d8567b2d347792b272e3bf4534ac81a5cff80798cf  target/wasm32-unknown-unknown/release/prediction_poll.wasm
