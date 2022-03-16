@@ -319,7 +319,7 @@ pub fn end_poll(deps: DepsMut, env: Env, poll_id: u64) -> Result<Response, Contr
     let config: Config = config_read(deps.storage).load()?;
     let mut state: State = state_read(deps.storage).load()?;
 
-    let (quorum, staked_weight) = if state.total_share.u128() == 0 {
+    let (quorum, staked_amount) = if state.total_share.u128() == 0 {
         (Decimal::zero(), Uint128::zero())
     } else if let Some(staked_amount) = a_poll.staked_amount {
         (
@@ -327,7 +327,7 @@ pub fn end_poll(deps: DepsMut, env: Env, poll_id: u64) -> Result<Response, Contr
             staked_amount,
         )
     } else {
-        let staked_weight = query_token_balance(
+        let staked_amount = query_token_balance(
             &deps.querier,
             deps.api.addr_humanize(&config.pollterra_token)?,
             deps.api.addr_humanize(&state.contract_addr)?,
@@ -335,8 +335,8 @@ pub fn end_poll(deps: DepsMut, env: Env, poll_id: u64) -> Result<Response, Contr
         .checked_sub(state.total_deposit)?;
 
         (
-            Decimal::from_ratio(tallied_weight, staked_weight),
-            staked_weight,
+            Decimal::from_ratio(tallied_weight, staked_amount),
+            staked_amount,
         )
     };
 
@@ -378,7 +378,7 @@ pub fn end_poll(deps: DepsMut, env: Env, poll_id: u64) -> Result<Response, Contr
 
     // Update poll status
     a_poll.status = poll_status;
-    a_poll.total_balance_at_end_poll = Some(staked_weight);
+    a_poll.total_balance_at_end_poll = Some(staked_amount);
     poll_store(deps.storage).save(&poll_id.to_be_bytes(), &a_poll)?;
 
     Ok(Response::new().add_messages(messages).add_attributes(vec![
