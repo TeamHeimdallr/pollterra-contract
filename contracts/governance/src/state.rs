@@ -384,7 +384,7 @@ pub enum Cw20HookMsg {
         link: Option<String>,
         execute_msgs: Option<Vec<PollExecuteMsg>>,
     },
-    /// StakeVotingTokens a user can stake their mirror token to receive rewards
+    /// StakeVotingTokens a user can stake their token to receive rewards
     /// or do vote on polls
     StakeVotingTokens {},
 }
