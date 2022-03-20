@@ -800,7 +800,7 @@ mod tests {
             bet_end_time: 2653673600,
         };
         let info = mock_info("creator", &[]);
-        let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+        let res = execute(deps.as_mut(), env, info, msg).unwrap();
         assert_eq!(
             CosmosMsg::Bank(BankMsg::Send {
                 to_address: "user1".to_string(),
@@ -880,7 +880,7 @@ mod tests {
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         let msg = QueryMsg::Config {};
-        let res = query(deps.as_ref(), env.clone(), msg).unwrap();
+        let res = query(deps.as_ref(), env, msg).unwrap();
         assert_eq!("user1", from_binary::<State>(&res).unwrap().owner.as_str());
     }
 }
