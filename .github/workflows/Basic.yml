@@ -64,6 +64,7 @@ jobs:
         contract:
           - prediction-poll
           - meta-contract
+          - governance
 
     steps:
       - name: Checkout sources
