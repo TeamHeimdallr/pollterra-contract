@@ -1,3 +1,4 @@
+4aec52058d6fd97e9ad4c125687765375921cd9b288b2c191862b86def6c5676  target/wasm32-unknown-unknown/release/distributor.wasm
 d77e87b2ff67483c5369a3a89070f7e3b394c32aa6dad2650a57f5c142fa36aa  target/wasm32-unknown-unknown/release/governance.wasm
 35a53ff8124a78437366df5450dd37762a0bb99ea9e98f73b357710d1e9cc3d6  target/wasm32-unknown-unknown/release/meta_contract.wasm
 1144c4f9b1601a3633bcca8451ae71667cce925b6805ab124e14670558bd278e  target/wasm32-unknown-unknown/release/prediction_poll.wasm
