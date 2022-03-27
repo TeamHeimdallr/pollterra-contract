@@ -34,6 +34,7 @@ pub fn update_config(
     Ok(response)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn register_distribution(
     deps: DepsMut,
     env: Env,
@@ -78,6 +79,7 @@ pub fn register_distribution(
     Ok(response)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn update_distribution(
     deps: DepsMut,
     env: Env,
