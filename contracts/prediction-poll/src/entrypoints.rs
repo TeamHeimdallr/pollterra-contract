@@ -22,7 +22,6 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    // TODO: change owner
     let state = State {
         owner: info.sender.clone(),
         status: BetStatus::Created,

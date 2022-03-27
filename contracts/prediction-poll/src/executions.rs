@@ -279,34 +279,6 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
         })))
 }
 
-// static DECIMAL_FRACTION: u128 = 1_000_000_000_000_000_000u128;
-// fn deduct_tax(deps: DepsMut, coins: Vec<Coin>) -> StdResult<Vec<Coin>> {
-//     let terra_querier = TerraQuerier::new(&deps.querier);
-//     let tax_rate: Decimal = (terra_querier.query_tax_rate()?).rate;
-
-//     coins
-//         .into_iter()
-//         .map(|v| {
-//             let tax_cap: Uint128 = (terra_querier.query_tax_cap(v.denom.to_string())?).cap;
-
-//             Ok(Coin {
-//                 amount: Uint128::from(
-//                     v.amount.u128()
-//                         - std::cmp::min(
-//                             v.amount.multiply_ratio(
-//                                 DECIMAL_FRACTION,
-//                                 (tax_rate * DECIMAL_FRACTION.into()).u128() + DECIMAL_FRACTION,
-//                             ),
-//                             tax_cap,
-//                         )
-//                         .u128(),
-//                 ),
-//                 denom: v.denom,
-//             })
-//         })
-//         .collect()
-// }
-
 pub fn try_reset_poll(
     deps: DepsMut,
     env: Env,
