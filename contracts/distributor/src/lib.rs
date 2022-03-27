@@ -1,8 +1,7 @@
 pub mod entrypoints;
 
-pub mod contract;
 mod error;
-pub mod helpers;
+pub mod executions;
 pub mod msg;
 mod queries;
 pub mod query_msgs;

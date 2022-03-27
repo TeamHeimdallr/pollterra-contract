@@ -1,12 +1,5 @@
 use cosmwasm_std::{Addr, QuerierWrapper, StdResult, Uint128};
-use cw20::{Cw20QueryMsg, Denom};
-
-pub fn query_balance(querier: &QuerierWrapper, denom: Denom, address: Addr) -> StdResult<Uint128> {
-    match denom {
-        Denom::Native(denom) => querier.query_balance(address, denom).map(|v| v.amount),
-        Denom::Cw20(contract_addr) => query_cw20_balance(querier, &contract_addr, &address),
-    }
-}
+use cw20::Cw20QueryMsg;
 
 pub fn query_cw20_balance(
     querier: &QuerierWrapper,
