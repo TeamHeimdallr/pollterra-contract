@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod tests {
+mod prediction_poll_tests {
     use crate::entrypoints::{execute, instantiate, query};
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
 
