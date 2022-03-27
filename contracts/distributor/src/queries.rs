@@ -44,7 +44,7 @@ pub fn get_distributions(deps: Deps, env: Env) -> Result<DistributionsResponse, 
                 released_amount,
                 distributable_amount: released_amount
                     .checked_sub(d.distributed_amount)
-                    .unwrap_or(Uint128::zero()),
+                    .unwrap_or_else(|_| Uint128::zero()),
                 distributed_amount: d.distributed_amount,
             }
         })

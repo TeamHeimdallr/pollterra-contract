@@ -95,8 +95,8 @@ pub fn update_distribution(
 
     let mut response = Response::new().add_attribute("action", "update_distribution");
 
-    let mut distribution =
-        Distribution::may_load(deps.storage, id)?.ok_or(StdError::not_found("Distribution"))?;
+    let mut distribution = Distribution::may_load(deps.storage, id)?
+        .ok_or_else(|| StdError::not_found("Distribution"))?;
 
     let prev_released_amount = distribution.released_amount(env.block.height);
 
@@ -165,8 +165,8 @@ pub fn remove_distribution_message(
 
     let mut response = Response::new().add_attribute("action", "remove_distribution_message");
 
-    let mut distribution =
-        Distribution::may_load(deps.storage, id)?.ok_or(StdError::not_found("Distribution"))?;
+    let mut distribution = Distribution::may_load(deps.storage, id)?
+        .ok_or_else(|| StdError::not_found("Distribution"))?;
 
     distribution.message = None;
     response = response.add_attribute("is_updated_message", "true");
@@ -183,11 +183,9 @@ pub fn distribute(
     id: Option<u64>,
 ) -> Result<Response, ContractError> {
     let mut distributions = if let Some(id) = id {
-        vec![
-            Distribution::may_load(deps.storage, id)?.ok_or(StdError::generic_err(
-                "This id is expired distribution or invalid id",
-            ))?,
-        ]
+        vec![Distribution::may_load(deps.storage, id)?.ok_or_else(|| {
+            StdError::generic_err("This id is expired distribution or invalid id")
+        })?]
     } else {
         Distribution::load_all(deps.storage)?
     };
@@ -202,7 +200,7 @@ pub fn distribute(
             let amount = distribution
                 .released_amount(env.block.height)
                 .checked_sub(distribution.distributed_amount)
-                .unwrap_or(Uint128::zero());
+                .unwrap_or_else(|_| Uint128::zero());
 
             if amount.is_zero() {
                 continue;

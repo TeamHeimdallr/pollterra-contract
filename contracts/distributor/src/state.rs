@@ -48,14 +48,14 @@ impl ContractState {
 
         balance
             .checked_sub(self.locked_amount)
-            .map_err(|e| StdError::overflow(e))
+            .map_err(StdError::overflow)
     }
 
     pub fn unlock(&mut self, amount: Uint128) -> StdResult<()> {
         self.locked_amount = self
             .locked_amount
             .checked_sub(amount)
-            .map_err(|e| StdError::overflow(e))?;
+            .map_err(StdError::overflow)?;
 
         Ok(())
     }
