@@ -32,10 +32,11 @@ fn invalid_validate_interval() {
  */
 #[test]
 fn valid_validate_interval() {
-    let mut valid = validate_decimal_value(Decimal::one(), Decimal::one()).unwrap();
-    assert_eq!(valid, ());
-    valid = validate_decimal_value(Decimal::zero(), Decimal::one()).unwrap();
-    assert_eq!(valid, ());
+    let mut valid = validate_decimal_value(Decimal::one(), Decimal::one());
+    assert!(valid.is_ok());
+
+    valid = validate_decimal_value(Decimal::zero(), Decimal::one());
+    assert!(valid.is_ok());
 }
 
 /**
@@ -65,14 +66,14 @@ fn invalid_quorum_2() {
  */
 #[test]
 fn valid_quorum() {
-    let mut valid = validate_quorum(Decimal::zero()).unwrap();
-    assert_eq!(valid, ());
+    let mut valid = validate_quorum(Decimal::zero());
+    assert!(valid.is_ok());
 
-    valid = validate_quorum(Decimal::one()).unwrap();
-    assert_eq!(valid, ());
+    valid = validate_quorum(Decimal::one());
+    assert!(valid.is_ok());
 
-    valid = validate_quorum(Decimal::from_ratio(1u128, 2u128)).unwrap();
-    assert_eq!(valid, ());
+    valid = validate_quorum(Decimal::from_ratio(1u128, 2u128));
+    assert!(valid.is_ok());
 }
 
 /**
@@ -102,14 +103,14 @@ fn invalid_threshold_2() {
  */
 #[test]
 fn valid_threshold() {
-    let mut valid = validate_threshold(Decimal::zero()).unwrap();
-    assert_eq!(valid, ());
+    let mut valid = validate_threshold(Decimal::zero());
+    assert!(valid.is_ok());
 
-    valid = validate_threshold(Decimal::one()).unwrap();
-    assert_eq!(valid, ());
+    valid = validate_threshold(Decimal::one());
+    assert!(valid.is_ok());
 
-    valid = validate_threshold(Decimal::from_ratio(1u128, 2u128)).unwrap();
-    assert_eq!(valid, ());
+    valid = validate_threshold(Decimal::from_ratio(1u128, 2u128));
+    assert!(valid.is_ok());
 }
 
 /**
@@ -145,8 +146,8 @@ fn invalid_long_link() {
 fn valid_link() {
     let link = String::from("this is a valid link");
     assert!(link.len() >= MIN_LINK_LENGTH && link.len() <= MAX_LINK_LENGTH);
-    let valid = validate_poll_link(&Some(link)).unwrap();
-    assert_eq!(valid, ());
+    let valid = validate_poll_link(&Some(link));
+    assert!(valid.is_ok());
 }
 
 /**
@@ -182,8 +183,8 @@ fn invalid_long_poll_title() {
 fn valid_poll_title() {
     let title = String::from("this is a valid title");
     assert!(title.len() >= MIN_TITLE_LENGTH && title.len() <= MAX_TITLE_LENGTH);
-    let valid = validate_poll_title(&title).unwrap();
-    assert_eq!(valid, ());
+    let valid = validate_poll_title(&title);
+    assert!(valid.is_ok());
 }
 
 /**
@@ -233,8 +234,8 @@ fn invalid_long_poll_description() {
 fn valid_poll_description() {
     let desc = String::from("this is a valid title");
     assert!(desc.len() >= MIN_DESC_LENGTH && desc.len() <= MAX_DESC_LENGTH);
-    let valid = validate_poll_description(&desc).unwrap();
-    assert_eq!(valid, ());
+    let valid = validate_poll_description(&desc);
+    assert!(valid.is_ok());
 }
 
 /**
@@ -245,8 +246,8 @@ fn valid_poll_period() {
     let timelock_period = DEFAULT_TIMELOCK_PERIOD;
     let expiration_period = DEFAULT_EXPIRATION_PERIOD;
     assert!(expiration_period > timelock_period);
-    let valid = validate_poll_period(timelock_period, expiration_period).unwrap();
-    assert_eq!(valid, ());
+    let valid = validate_poll_period(timelock_period, expiration_period);
+    assert!(valid.is_ok());
 }
 
 /**
