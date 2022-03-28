@@ -142,7 +142,7 @@ impl Allowance {
     }
 
     pub fn decrease(&mut self, amount: Uint128) -> StdResult<()> {
-        self.allowed_amount = self.allowed_amount.checked_sub(amount.clone())?;
+        self.allowed_amount = self.allowed_amount.checked_sub(amount)?;
         self.remain_amount = self.remain_amount.checked_sub(amount)?;
 
         Ok(())

@@ -65,14 +65,14 @@ pub fn increase_allowance(
     let address = deps.api.addr_validate(address.as_str())?;
     let mut allowance = Allowance::load_or_default(deps.storage, &address)?;
 
-    allowance.increase(amount.clone());
+    allowance.increase(amount);
     allowance.save(deps.storage)?;
 
     state.remain_allowance_amount += amount;
     state.save(deps.storage)?;
 
     response = response.add_attribute("address", address.to_string());
-    response = response.add_attribute("amount", amount.clone());
+    response = response.add_attribute("amount", amount);
     response = response.add_attribute("allowed_amount", allowance.allowed_amount);
     response = response.add_attribute("remain_amount", allowance.remain_amount);
 
@@ -106,7 +106,7 @@ pub fn decrease_allowance(
             amount
         }
     } else {
-        allowance.remain_amount.clone()
+        allowance.remain_amount
     };
 
     allowance.decrease(amount)?;
