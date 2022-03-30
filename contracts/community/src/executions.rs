@@ -8,7 +8,7 @@ use crate::error::ContractError;
 
 use crate::state::{Allowance, ContractConfig, ContractState};
 
-pub fn update_config(
+pub fn update_admins(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
@@ -19,7 +19,7 @@ pub fn update_config(
         return Err(ContractError::Unauthorized {});
     }
 
-    let mut response = Response::new().add_attribute("action", "update_config");
+    let mut response = Response::new().add_attribute("action", "update_admins");
 
     if let Some(admins) = admins.as_ref() {
         config.admins = admins

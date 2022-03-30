@@ -12,7 +12,7 @@ pub struct InstantiateMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    UpdateConfig {
+    UpdateAdmins {
         admins: Option<Vec<String>>,
     },
     IncreaseAllowance {
