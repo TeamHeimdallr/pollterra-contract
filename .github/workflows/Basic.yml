@@ -65,6 +65,7 @@ jobs:
           - prediction-poll
           - meta-contract
           - governance
+          - community
           - distributor
 
     steps:
