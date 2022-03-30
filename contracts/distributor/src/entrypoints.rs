@@ -53,7 +53,7 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig { admins } => executions::update_config(deps, env, info, admins),
+        ExecuteMsg::UpdateAdmins { admins } => executions::update_admins(deps, env, info, admins),
         ExecuteMsg::RegisterDistribution {
             start_height,
             end_height,
