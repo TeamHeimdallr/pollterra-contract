@@ -5,10 +5,10 @@
     {
       "type": "object",
       "required": [
-        "update_config"
+        "update_admins"
       ],
       "properties": {
-        "update_config": {
+        "update_admins": {
           "type": "object",
           "properties": {
             "admins": {
