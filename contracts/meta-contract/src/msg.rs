@@ -1,5 +1,6 @@
 use crate::state::State;
-use cosmwasm_std::Addr;
+use cosmwasm_std::{Addr, Uint128};
+use cw20::Cw20ReceiveMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -9,11 +10,10 @@ pub struct InstantiateMsg {}
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    InitPoll {
-        code_id: u64,
-        poll_name: String,
-        start_time: u64,
-        bet_end_time: u64,
+    Receive(Cw20ReceiveMsg),
+    RegisterTokenContract {
+        token_contract: String,
+        creation_deposit: Uint128,
     },
     TransferOwner {
         new_owner: String,

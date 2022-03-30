@@ -48,6 +48,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "config"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-std",
+ "schemars",
+ "serde",
+]
+
+[[package]]
 name = "const-oid"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -471,6 +480,7 @@ dependencies = [
 name = "messages"
 version = "0.1.0"
 dependencies = [
+ "cosmwasm-std",
  "schemars",
  "serde",
 ]
@@ -479,11 +489,14 @@ dependencies = [
 name = "meta-contract"
 version = "0.1.0"
 dependencies = [
+ "base64",
+ "config",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cosmwasm-storage",
  "cw-storage-plus",
  "cw2",
+ "cw20",
  "messages",
  "protobuf",
  "protoc-rust",
@@ -513,6 +526,7 @@ dependencies = [
 name = "prediction-poll"
 version = "0.1.0"
 dependencies = [
+ "config",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cosmwasm-storage",

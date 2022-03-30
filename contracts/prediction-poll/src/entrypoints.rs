@@ -1,6 +1,6 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
+    to_binary, Binary, Deps, DepsMut, Env, Event, MessageInfo, Response, StdResult, Uint128,
 };
 use cw2::set_contract_version;
 
@@ -24,6 +24,8 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     let state = State {
         owner: info.sender.clone(),
+        generator: msg.generator,
+        deposit_amount: msg.deposit_amount,
         status: BetStatus::Created,
         bet_live: false,
         reward_live: false,
@@ -38,7 +40,9 @@ pub fn instantiate(
 
     Ok(Response::new()
         .add_attribute("method", "instantiate")
-        .add_attribute("owner", info.sender))
+        .add_attribute("owner", info.sender)
+        // TODO : where to add the attributes ? events? responses?
+        .add_event(Event::new("deposit").add_attribute("deposit_amount", state.deposit_amount)))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
