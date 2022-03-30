@@ -41,6 +41,46 @@
     {
       "type": "object",
       "required": [
+        "update_creation_deposit"
+      ],
+      "properties": {
+        "update_creation_deposit": {
+          "type": "object",
+          "required": [
+            "creation_deposit"
+          ],
+          "properties": {
+            "creation_deposit": {
+              "$ref": "#/definitions/Uint128"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "update_reclaimable_threshold"
+      ],
+      "properties": {
+        "update_reclaimable_threshold": {
+          "type": "object",
+          "required": [
+            "reclaimable_threshold"
+          ],
+          "properties": {
+            "reclaimable_threshold": {
+              "$ref": "#/definitions/Uint128"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "transfer_owner"
       ],
       "properties": {

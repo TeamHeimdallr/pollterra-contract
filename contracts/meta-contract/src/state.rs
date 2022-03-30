@@ -8,6 +8,7 @@ pub struct State {
     pub owner: Addr,
     pub token_contract: String,
     pub creation_deposit: Uint128,
+    pub reclaimable_threshold: Uint128,
     pub num_contract: u64,
 }
 

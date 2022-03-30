@@ -15,6 +15,12 @@ pub enum ExecuteMsg {
         token_contract: String,
         creation_deposit: Uint128,
     },
+    UpdateCreationDeposit {
+        creation_deposit: Uint128,
+    },
+    UpdateReclaimableThreshold {
+        reclaimable_threshold: Uint128,
+    },
     TransferOwner {
         new_owner: String,
     },

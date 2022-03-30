@@ -23,6 +23,8 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 // reply_id is only one for now
 pub const INSTANTIATE_REPLY_ID: u64 = 1;
 
+const DEFAULT_RECLAIMABLE_THRESHOLD: Uint128 = Uint128::new(1_000);
+
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
@@ -34,6 +36,7 @@ pub fn instantiate(
         owner: info.sender.clone(),
         token_contract: String::new(),
         creation_deposit: Uint128::zero(),
+        reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
         num_contract: 0,
     };
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
@@ -56,7 +59,13 @@ pub fn execute(
         ExecuteMsg::RegisterTokenContract {
             token_contract,
             creation_deposit,
-        } => register_token_contract(deps, token_contract, creation_deposit),
+        } => register_token_contract(deps, info, token_contract, creation_deposit),
+        ExecuteMsg::UpdateCreationDeposit { creation_deposit } => {
+            update_creation_deposit(deps, info, creation_deposit)
+        }
+        ExecuteMsg::UpdateReclaimableThreshold {
+            reclaimable_threshold,
+        } => update_reclaimable_threshold(deps, info, reclaimable_threshold),
         ExecuteMsg::TransferOwner { new_owner } => try_transfer_owner(deps, info, new_owner),
     }
 }
@@ -111,7 +120,12 @@ pub fn init_poll(
     let state: State = read_state(deps.storage).unwrap();
     let contract_owner: Addr = state.owner;
 
-    //TODO deposit amount check
+    if state.creation_deposit != deposit_amount {
+        return Err(StdError::generic_err(format!(
+            "deposit amount should be {}",
+            state.creation_deposit
+        )));
+    }
 
     let msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Instantiate {
         admin: Some(contract_owner.to_string()),
@@ -120,6 +134,7 @@ pub fn init_poll(
             generator: deps.api.addr_validate(&generator)?,
             token_contract: state.token_contract,
             deposit_amount,
+            reclaimable_threshold: state.reclaimable_threshold,
             poll_name: poll_name.clone(),
             start_time,
             bet_end_time,
@@ -137,6 +152,7 @@ pub fn init_poll(
 
 pub fn register_token_contract(
     deps: DepsMut,
+    info: MessageInfo,
     token_contract: String,
     creation_deposit: Uint128,
 ) -> StdResult<Response> {
@@ -145,11 +161,59 @@ pub fn register_token_contract(
         return Err(StdError::generic_err("already registered"));
     }
 
+    if info.sender != state.owner {
+        return Err(StdError::generic_err(
+            "only the original owner can register a token contract",
+        ));
+    }
+
     state.token_contract = deps.api.addr_validate(&token_contract)?.to_string();
     state.creation_deposit = creation_deposit;
     store_state(deps.storage, &state)?;
 
     Ok(Response::new().add_attribute("method", "register_token_contract"))
+}
+
+// TODO : update config at once
+pub fn update_creation_deposit(
+    deps: DepsMut,
+    info: MessageInfo,
+    creation_deposit: Uint128,
+) -> StdResult<Response> {
+    let mut state: State = read_state(deps.storage).unwrap();
+    if String::new().eq(&state.token_contract) {
+        return Err(StdError::generic_err("token not registered"));
+    }
+
+    if info.sender != state.owner {
+        return Err(StdError::generic_err(
+            "only the original owner can update creation deposit amount",
+        ));
+    }
+
+    state.creation_deposit = creation_deposit;
+    store_state(deps.storage, &state)?;
+
+    Ok(Response::new().add_attribute("method", "update_creatoin_deposit"))
+}
+
+pub fn update_reclaimable_threshold(
+    deps: DepsMut,
+    info: MessageInfo,
+    reclaimable_threshold: Uint128,
+) -> StdResult<Response> {
+    let mut state: State = read_state(deps.storage).unwrap();
+
+    if info.sender != state.owner {
+        return Err(StdError::generic_err(
+            "only the original owner can update reclaimable threshold amount",
+        ));
+    }
+
+    state.reclaimable_threshold = reclaimable_threshold;
+    store_state(deps.storage, &state)?;
+
+    Ok(Response::new().add_attribute("method", "update_reclaimable_threshold"))
 }
 
 pub fn try_transfer_owner(

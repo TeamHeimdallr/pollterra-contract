@@ -6,6 +6,7 @@
     "creation_deposit",
     "num_contract",
     "owner",
+    "reclaimable_threshold",
     "token_contract"
   ],
   "properties": {
@@ -19,6 +20,9 @@
     },
     "owner": {
       "$ref": "#/definitions/Addr"
+    },
+    "reclaimable_threshold": {
+      "$ref": "#/definitions/Uint128"
     },
     "token_contract": {
       "type": "string"
