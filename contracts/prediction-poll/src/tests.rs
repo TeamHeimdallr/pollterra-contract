@@ -11,6 +11,7 @@ mod prediction_poll_tests {
 
     const DENOM: &str = "uusd";
     const DEFAULT_MINIMUM_BET: Uint128 = Uint128::new(1_000);
+    const DEFAULT_RECLAIMABLE_THRESHOLD: Uint128 = Uint128::new(1_000);
     const DEPOSIT_AMOUNT: Uint128 = Uint128::new(1_000);
 
     #[test]
@@ -21,6 +22,7 @@ mod prediction_poll_tests {
             generator: Addr::unchecked("generator"),
             token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
@@ -47,6 +49,7 @@ mod prediction_poll_tests {
             generator: Addr::unchecked("generator"),
             token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
@@ -86,6 +89,7 @@ mod prediction_poll_tests {
             generator: Addr::unchecked("generator"),
             token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
@@ -132,6 +136,7 @@ mod prediction_poll_tests {
             generator: Addr::unchecked("generator"),
             token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
@@ -175,6 +180,7 @@ mod prediction_poll_tests {
             generator: Addr::unchecked("generator"),
             token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
@@ -243,6 +249,7 @@ mod prediction_poll_tests {
             generator: Addr::unchecked("generator"),
             token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
@@ -319,6 +326,7 @@ mod prediction_poll_tests {
             generator: Addr::unchecked("generator"),
             token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 6300000,
             bet_end_time: 6400000,

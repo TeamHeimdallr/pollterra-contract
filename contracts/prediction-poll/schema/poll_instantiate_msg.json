@@ -7,6 +7,7 @@
     "deposit_amount",
     "generator",
     "poll_name",
+    "reclaimable_threshold",
     "start_time",
     "token_contract"
   ],
@@ -24,6 +25,9 @@
     },
     "poll_name": {
       "type": "string"
+    },
+    "reclaimable_threshold": {
+      "$ref": "#/definitions/Uint128"
     },
     "start_time": {
       "type": "integer",

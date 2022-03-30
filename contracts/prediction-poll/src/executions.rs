@@ -196,7 +196,7 @@ pub fn try_finish_poll(
             amount: state.deposit_amount,
         };
     }
-    state.reclaimed = true;
+    state.deposit_reclaimed = true;
     store_state(deps.storage, &state)?;
 
     Ok(Response::new()
@@ -300,7 +300,7 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
 
 pub fn try_reclaim_deposit(deps: DepsMut) -> StdResult<Response> {
     let mut state = read_state(deps.storage)?;
-    if state.reclaimed {
+    if state.deposit_reclaimed {
         return Err(StdError::generic_err("Already reclaimed".to_string()));
     }
 
@@ -308,8 +308,8 @@ pub fn try_reclaim_deposit(deps: DepsMut) -> StdResult<Response> {
         return Err(StdError::generic_err("Not enough total amount".to_string()));
     }
 
-    state.reclaimed = true;
-    let _ = store_state(deps.storage, &state);
+    state.deposit_reclaimed = true;
+    store_state(deps.storage, &state)?;
 
     Ok(Response::new()
         .add_attribute("method", "try_reclaim_deposit")
