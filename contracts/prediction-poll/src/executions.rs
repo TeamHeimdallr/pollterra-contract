@@ -1,8 +1,9 @@
 use cosmwasm_std::{
-    BankMsg, Coin, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Order, Response, StdError,
-    StdResult, Timestamp, Uint128,
+    to_binary, BankMsg, Coin, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Order, Response,
+    StdError, StdResult, Timestamp, Uint128, WasmMsg,
 };
 use cw2::set_contract_version;
+use cw20::Cw20ExecuteMsg;
 use std::str;
 
 use crate::state::{
@@ -184,9 +185,27 @@ pub fn try_finish_poll(
     state.bet_live = false;
     state.reward_live = true;
     state.bet_end_time = 0;
+
+    let mut cw20_msg = Cw20ExecuteMsg::Transfer {
+        recipient: state.generator.to_string(),
+        amount: state.deposit_amount,
+    };
+    if state.total_amount < state.reclaimable_threshold {
+        // TODO : transfer 50% to the community fund
+        cw20_msg = Cw20ExecuteMsg::Burn {
+            amount: state.deposit_amount,
+        };
+    }
+    state.deposit_reclaimed = true;
     store_state(deps.storage, &state)?;
 
-    Ok(Response::new().add_attribute("method", "try_finish_poll"))
+    Ok(Response::new()
+        .add_attribute("method", "try_finish_poll")
+        .add_message(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: state.token_contract.to_string(),
+            msg: to_binary(&cw20_msg)?,
+            funds: vec![],
+        })))
 }
 
 pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
@@ -251,7 +270,7 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
 
     if state.status != BetStatus::Reward {
         return Err(StdError::generic_err(format!(
-            "cannot cliam rewards. current status: {}",
+            "cannot claim rewards. current status: {}",
             state.status
         )));
     }
@@ -276,6 +295,31 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
                 denom: DENOM.to_string(),
                 amount: value,
             }],
+        })))
+}
+
+pub fn try_reclaim_deposit(deps: DepsMut) -> StdResult<Response> {
+    let mut state = read_state(deps.storage)?;
+    if state.deposit_reclaimed {
+        return Err(StdError::generic_err("Already reclaimed".to_string()));
+    }
+
+    if state.total_amount < state.reclaimable_threshold {
+        return Err(StdError::generic_err("Not enough total amount".to_string()));
+    }
+
+    state.deposit_reclaimed = true;
+    store_state(deps.storage, &state)?;
+
+    Ok(Response::new()
+        .add_attribute("method", "try_reclaim_deposit")
+        .add_message(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: state.token_contract.to_string(),
+            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+                recipient: state.generator.to_string(),
+                amount: state.deposit_amount,
+            })?,
+            funds: vec![],
         })))
 }
 

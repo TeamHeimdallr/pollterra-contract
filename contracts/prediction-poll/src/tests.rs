@@ -5,29 +5,35 @@ mod prediction_poll_tests {
 
     use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, UserBetResponse, UserRewardsResponse};
     use crate::state::State;
-    use cosmwasm_std::{coins, from_binary, BankMsg, Coin, CosmosMsg, Order, Timestamp, Uint128};
+    use cosmwasm_std::{
+        coins, from_binary, Addr, BankMsg, Coin, CosmosMsg, Order, Timestamp, Uint128,
+    };
 
     const DENOM: &str = "uusd";
     const DEFAULT_MINIMUM_BET: Uint128 = Uint128::new(1_000);
+    const DEFAULT_RECLAIMABLE_THRESHOLD: Uint128 = Uint128::new(1_000);
+    const DEPOSIT_AMOUNT: Uint128 = Uint128::new(1_000);
 
     #[test]
     fn proper_initialization() {
         let mut deps = mock_dependencies(&[]);
 
         let msg = InstantiateMsg {
+            generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
+            deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
         };
         let info = mock_info("creator", &[]);
+        let _res = instantiate(deps.as_mut(), mock_env(), info, msg);
 
-        // we can just call .unwrap() to assert this was a success
-        let res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-        assert_eq!(0, res.messages.len());
-
-        // it worked, let's query the state
         let res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
         let value: State = from_binary(&res).unwrap();
+        assert_eq!(Addr::unchecked("generator"), value.generator);
+        assert_eq!(DEPOSIT_AMOUNT, value.deposit_amount);
         assert_eq!("test_poll", value.poll_name);
         assert_eq!(1643673600, value.start_time);
         assert_eq!(1653673600, value.bet_end_time);
@@ -40,6 +46,10 @@ mod prediction_poll_tests {
         env.block.time = Timestamp::from_seconds(1649673600);
 
         let msg = InstantiateMsg {
+            generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
+            deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
@@ -76,6 +86,10 @@ mod prediction_poll_tests {
         env.block.time = Timestamp::from_seconds(1649673600);
 
         let msg = InstantiateMsg {
+            generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
+            deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
@@ -119,6 +133,10 @@ mod prediction_poll_tests {
         env.block.time = Timestamp::from_seconds(1649673600);
 
         let msg = InstantiateMsg {
+            generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
+            deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
@@ -159,6 +177,10 @@ mod prediction_poll_tests {
         env.block.time = Timestamp::from_seconds(1649673600);
 
         let msg = InstantiateMsg {
+            generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
+            deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
@@ -224,6 +246,10 @@ mod prediction_poll_tests {
         env.block.time = Timestamp::from_seconds(1649673600);
 
         let msg = InstantiateMsg {
+            generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
+            deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
             bet_end_time: 1653673600,
@@ -297,6 +323,10 @@ mod prediction_poll_tests {
         env.block.height = 6340000;
 
         let msg = InstantiateMsg {
+            generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
+            deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             start_time: 6300000,
             bet_end_time: 6400000,

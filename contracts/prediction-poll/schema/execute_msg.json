@@ -105,6 +105,18 @@
     {
       "type": "object",
       "required": [
+        "reclaim_deposit"
+      ],
+      "properties": {
+        "reclaim_deposit": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "transfer_owner"
       ],
       "properties": {

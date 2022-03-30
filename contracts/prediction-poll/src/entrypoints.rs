@@ -10,9 +10,10 @@ use crate::state::{BetStatus, State, STATE};
 use crate::{executions, queries};
 
 // version info for migration info
-const CONTRACT_NAME: &str = "crates.io:pollterra-contract";
+const CONTRACT_NAME: &str = "crates.io:prediction-poll";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
+// TODO : set proper default values
 const DEFAULT_MINIMUM_BET: Uint128 = Uint128::new(1_000);
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -24,6 +25,11 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     let state = State {
         owner: info.sender.clone(),
+        generator: msg.generator,
+        token_contract: msg.token_contract,
+        deposit_amount: msg.deposit_amount,
+        deposit_reclaimed: false,
+        reclaimable_threshold: msg.reclaimable_threshold,
         status: BetStatus::Created,
         bet_live: false,
         reward_live: false,
@@ -38,7 +44,8 @@ pub fn instantiate(
 
     Ok(Response::new()
         .add_attribute("method", "instantiate")
-        .add_attribute("owner", info.sender))
+        .add_attribute("owner", info.sender)
+        .add_attribute("deposit_amount", state.deposit_amount))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -58,6 +65,7 @@ pub fn execute(
             start_time,
             bet_end_time,
         } => executions::try_reset_poll(deps, _env, info, poll_name, start_time, bet_end_time),
+        ExecuteMsg::ReclaimDeposit {} => executions::try_reclaim_deposit(deps),
         ExecuteMsg::TransferOwner { new_owner } => {
             executions::try_transfer_owner(deps, info, new_owner)
         }
