@@ -19,6 +19,7 @@ mod prediction_poll_tests {
 
         let msg = InstantiateMsg {
             generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
@@ -44,6 +45,7 @@ mod prediction_poll_tests {
 
         let msg = InstantiateMsg {
             generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
@@ -82,6 +84,7 @@ mod prediction_poll_tests {
 
         let msg = InstantiateMsg {
             generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
@@ -127,6 +130,7 @@ mod prediction_poll_tests {
 
         let msg = InstantiateMsg {
             generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
@@ -169,6 +173,7 @@ mod prediction_poll_tests {
 
         let msg = InstantiateMsg {
             generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
@@ -236,6 +241,7 @@ mod prediction_poll_tests {
 
         let msg = InstantiateMsg {
             generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
             poll_name: "test_poll".to_string(),
             start_time: 1643673600,
@@ -311,6 +317,7 @@ mod prediction_poll_tests {
 
         let msg = InstantiateMsg {
             generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
             deposit_amount: DEPOSIT_AMOUNT,
             poll_name: "test_poll".to_string(),
             start_time: 6300000,

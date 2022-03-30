@@ -2,17 +2,15 @@
 mod meta_contract_tests {
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
     use cosmwasm_std::{
-        to_binary, Binary, ContractResult, CosmosMsg, Event, Reply, ReplyOn, SubMsg,
-        SubMsgExecutionResponse, Uint128, WasmMsg,
+        to_binary, Binary, ContractResult, CosmosMsg, Event, Reply, SubMsgExecutionResponse,
+        Uint128, WasmMsg,
     };
     use cw20::Cw20ExecuteMsg;
     use protobuf::Message;
-    use base64::encode;
 
-    use crate::contract::{execute, instantiate, query, reply, INSTANTIATE_REPLY_ID};
-    use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+    use crate::contract::{execute, instantiate, reply, INSTANTIATE_REPLY_ID};
+    use crate::msg::{ExecuteMsg, InstantiateMsg};
     use crate::response::MsgInstantiateContractResponse;
-    use crate::state::Cw20HookMsg;
 
     const TOKEN_CONTRACT: &str = "pollterra";
     const DEPOSIT_AMOUNT: Uint128 = Uint128::new(1_000);
@@ -41,20 +39,11 @@ mod meta_contract_tests {
         let _reply: Reply = Reply {
             id: INSTANTIATE_REPLY_ID,
             result: ContractResult::Ok(SubMsgExecutionResponse {
-                events: vec![Event::new("").add_attribute("deposit_amount", DEPOSIT_AMOUNT)],
+                // The event type of InstantiateMsg is 'wasm'
+                events: vec![Event::new("wasm").add_attribute("deposit_amount", DEPOSIT_AMOUNT)],
                 data: Some(bb),
             }),
         };
-
-        let aa = to_binary(&Cw20HookMsg::InitPoll {
-            code_id: 58425,
-            poll_name: "testpoll0".to_string(),
-            start_time: 100000000000,
-            bet_end_time: 200000000000,
-        }).unwrap().to_base64();
-
-        assert_eq!(to_binary(&Uint128::zero()).unwrap().to_base64(), aa);
-        
 
         let res = reply(deps.as_mut(), mock_env(), _reply).unwrap();
         assert_eq!(res.messages.len(), 1);

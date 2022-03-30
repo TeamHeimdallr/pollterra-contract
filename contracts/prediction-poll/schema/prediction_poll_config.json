@@ -1,16 +1,21 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "State",
+  "title": "PredictionPollConfig",
   "type": "object",
   "required": [
     "bet_end_time",
     "bet_live",
+    "deposit_amount",
+    "generator",
     "minimum_bet",
     "owner",
     "poll_name",
+    "reclaimable_threshold",
+    "reclaimed",
     "reward_live",
     "start_time",
     "status",
+    "token_contract",
     "total_amount"
   ],
   "properties": {
@@ -22,6 +27,12 @@
     "bet_live": {
       "type": "boolean"
     },
+    "deposit_amount": {
+      "$ref": "#/definitions/Uint128"
+    },
+    "generator": {
+      "$ref": "#/definitions/Addr"
+    },
     "minimum_bet": {
       "$ref": "#/definitions/Uint128"
     },
@@ -30,6 +41,12 @@
     },
     "poll_name": {
       "type": "string"
+    },
+    "reclaimable_threshold": {
+      "$ref": "#/definitions/Uint128"
+    },
+    "reclaimed": {
+      "type": "boolean"
     },
     "reward_live": {
       "type": "boolean"
@@ -41,6 +58,9 @@
     },
     "status": {
       "$ref": "#/definitions/BetStatus"
+    },
+    "token_contract": {
+      "type": "string"
     },
     "total_amount": {
       "$ref": "#/definitions/Uint128"

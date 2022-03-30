@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
     pub owner: Addr,
-    pub token_contract: Addr,
+    pub token_contract: String,
     pub creation_deposit: Uint128,
     pub num_contract: u64,
 }

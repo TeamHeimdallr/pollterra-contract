@@ -5,9 +5,13 @@ use std::fmt;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct PredictionPollConfig {
+    // TODO : Have too many fields. Need to split it.
     pub owner: Addr,
     pub generator: Addr,
+    pub token_contract: String,
     pub deposit_amount: Uint128,
+    pub reclaimed: bool,
+    pub reclaimable_threshold: Uint128,
     pub status: BetStatus,
     pub bet_live: bool,
     pub reward_live: bool,

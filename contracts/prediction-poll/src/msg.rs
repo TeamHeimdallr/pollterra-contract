@@ -22,6 +22,7 @@ pub enum ExecuteMsg {
         start_time: u64,
         bet_end_time: u64,
     },
+    ReclaimDeposit {},
     TransferOwner {
         new_owner: String,
     },

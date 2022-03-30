@@ -489,7 +489,6 @@ dependencies = [
 name = "meta-contract"
 version = "0.1.0"
 dependencies = [
- "base64",
  "config",
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -532,6 +531,7 @@ dependencies = [
  "cosmwasm-storage",
  "cw-storage-plus",
  "cw2",
+ "cw20",
  "messages",
  "schemars",
  "serde",

@@ -8,7 +8,6 @@ use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 use protobuf::Message;
 #[cfg(not(feature = "library"))]
 use std::str;
-// use terra_cosmwasm::TerraQuerier;
 
 use crate::error::ContractError;
 use crate::msg::{ConfigResponse, ContractsResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
@@ -33,7 +32,7 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     let state = State {
         owner: info.sender.clone(),
-        token_contract: Addr::unchecked(""),
+        token_contract: String::new(),
         creation_deposit: Uint128::zero(),
         num_contract: 0,
     };
@@ -94,10 +93,7 @@ pub fn receive_cw20(
             start_time,
             bet_end_time,
         ),
-        _ => {
-            let a = &cw20_msg.msg;
-            Err(StdError::generic_err(format!("Cw20Msg doesn't match: {:?}", a.to_base64())))
-        }
+        _ => Err(StdError::generic_err("Cw20Msg doesn't match")),
     }
 }
 
@@ -112,7 +108,8 @@ pub fn init_poll(
     start_time: u64,
     bet_end_time: u64,
 ) -> StdResult<Response> {
-    let contract_owner: Addr = read_state(deps.storage).unwrap().owner;
+    let state: State = read_state(deps.storage).unwrap();
+    let contract_owner: Addr = state.owner;
 
     //TODO deposit amount check
 
@@ -121,6 +118,7 @@ pub fn init_poll(
         code_id,
         msg: to_binary(&PollInstantiateMsg {
             generator: deps.api.addr_validate(&generator)?,
+            token_contract: state.token_contract,
             deposit_amount,
             poll_name: poll_name.clone(),
             start_time,
@@ -143,11 +141,11 @@ pub fn register_token_contract(
     creation_deposit: Uint128,
 ) -> StdResult<Response> {
     let mut state: State = read_state(deps.storage).unwrap();
-    if state.token_contract != Addr::unchecked("") {
+    if !String::new().eq(&state.token_contract) {
         return Err(StdError::generic_err("already registered"));
     }
 
-    state.token_contract = deps.api.addr_validate(&token_contract)?;
+    state.token_contract = deps.api.addr_validate(&token_contract)?.to_string();
     state.creation_deposit = creation_deposit;
     store_state(deps.storage, &state)?;
 
@@ -192,22 +190,36 @@ fn after_poll_init(deps: DepsMut, msg: Reply) -> StdResult<Response> {
     let _ = CONTRACTS.save(deps.storage, addr, &());
 
     let event_vec: Vec<Event> = reply_result.events;
-    let deposit_amount: String = event_vec[0].attributes[0].value.clone();
+
+    let mut deposit_amount: Option<String> = None;
+    for event in event_vec.iter() {
+        if "wasm".eq_ignore_ascii_case(&event.ty) {
+            for attribute in event.attributes.iter() {
+                if "deposit_amount".eq_ignore_ascii_case(&attribute.key) {
+                    deposit_amount = Some(attribute.value.clone());
+                }
+            }
+        }
+    }
+
+    if deposit_amount.is_none() {
+        panic!(""); // TODO error message
+    }
+    let deposit_amount = Uint128::from(deposit_amount.unwrap().parse::<u128>().unwrap());
 
     let state: State = read_state(deps.storage).unwrap();
 
     Ok(Response::new()
         .add_attribute("method", "reply")
         .add_attribute("contract_address", contract_address)
-        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: state.token_contract.to_string(),
+        .add_message(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: state.token_contract,
             msg: to_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: contract_address.to_string(),
-                // Uint128::from_str doesn't work ... ?
-                amount: Uint128::from(deposit_amount.parse::<u128>().unwrap()),
+                amount: deposit_amount,
             })?,
             funds: vec![],
-        })]))
+        })))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
