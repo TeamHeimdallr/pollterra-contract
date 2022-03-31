@@ -1,4 +1,7 @@
-pub mod contract;
+pub mod entrypoints;
+pub mod executions;
+pub mod queries;
+pub mod replies;
 mod error;
 pub mod msg;
 pub mod response;

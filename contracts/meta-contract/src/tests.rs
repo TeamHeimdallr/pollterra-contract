@@ -8,9 +8,9 @@ mod meta_contract_tests {
     use cw20::Cw20ExecuteMsg;
     use protobuf::Message;
 
-    use crate::contract::{execute, instantiate, reply, INSTANTIATE_REPLY_ID};
     use crate::msg::{ExecuteMsg, InstantiateMsg};
     use crate::response::MsgInstantiateContractResponse;
+    use crate::entrypoints;
 
     const TOKEN_CONTRACT: &str = "pollterra";
     const DEPOSIT_AMOUNT: Uint128 = Uint128::new(1_000);
@@ -21,14 +21,14 @@ mod meta_contract_tests {
 
         let msg = InstantiateMsg {};
         let info = mock_info("creator", &[]);
-        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+        let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
         let msg = ExecuteMsg::RegisterTokenContract {
             token_contract: TOKEN_CONTRACT.to_string(),
             creation_deposit: DEPOSIT_AMOUNT,
         };
         let info = mock_info("creator", &[]);
-        let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+        let _res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg).unwrap();
 
         let mut reply_message = MsgInstantiateContractResponse::default();
         reply_message.set_contract_address("contract_address".to_string());
@@ -37,7 +37,7 @@ mod meta_contract_tests {
         let bb = Binary::from(aa);
 
         let _reply: Reply = Reply {
-            id: INSTANTIATE_REPLY_ID,
+            id: entrypoints::INSTANTIATE_REPLY_ID,
             result: ContractResult::Ok(SubMsgExecutionResponse {
                 // The event type of InstantiateMsg is 'wasm'
                 events: vec![Event::new("wasm").add_attribute("deposit_amount", DEPOSIT_AMOUNT)],
@@ -45,7 +45,7 @@ mod meta_contract_tests {
             }),
         };
 
-        let res = reply(deps.as_mut(), mock_env(), _reply).unwrap();
+        let res = entrypoints::reply(deps.as_mut(), mock_env(), _reply).unwrap();
         assert_eq!(res.messages.len(), 1);
         assert_eq!(
             res.messages[0].msg,
