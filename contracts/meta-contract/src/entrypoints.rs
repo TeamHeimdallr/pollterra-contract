@@ -1,7 +1,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo,
-    Reply, Response, StdError, StdResult, Uint128,
+    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdError, StdResult,
+    Uint128,
 };
 use cw2::set_contract_version;
 #[cfg(not(feature = "library"))]
@@ -62,7 +62,9 @@ pub fn execute(
         ExecuteMsg::UpdateReclaimableThreshold {
             reclaimable_threshold,
         } => executions::update_reclaimable_threshold(deps, info, reclaimable_threshold),
-        ExecuteMsg::TransferOwner { new_owner } => executions::try_transfer_owner(deps, info, new_owner),
+        ExecuteMsg::TransferOwner { new_owner } => {
+            executions::try_transfer_owner(deps, info, new_owner)
+        }
     }
 }
 

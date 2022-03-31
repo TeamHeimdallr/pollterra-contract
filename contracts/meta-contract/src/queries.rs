@@ -1,6 +1,4 @@
-use cosmwasm_std::{
-    Deps, Order, StdResult,
-};
+use cosmwasm_std::{Deps, Order, StdResult};
 #[cfg(not(feature = "library"))]
 use std::str;
 

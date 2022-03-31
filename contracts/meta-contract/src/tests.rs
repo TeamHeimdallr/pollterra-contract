@@ -8,9 +8,9 @@ mod meta_contract_tests {
     use cw20::Cw20ExecuteMsg;
     use protobuf::Message;
 
+    use crate::entrypoints;
     use crate::msg::{ExecuteMsg, InstantiateMsg};
     use crate::response::MsgInstantiateContractResponse;
-    use crate::entrypoints;
 
     const TOKEN_CONTRACT: &str = "pollterra";
     const DEPOSIT_AMOUNT: Uint128 = Uint128::new(1_000);

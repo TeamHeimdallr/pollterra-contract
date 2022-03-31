@@ -1,6 +1,5 @@
 use cosmwasm_std::{
-    to_binary, CosmosMsg, DepsMut, Event, Reply,
-    Response, StdError, StdResult, Uint128, WasmMsg,
+    to_binary, CosmosMsg, DepsMut, Event, Reply, Response, StdError, StdResult, Uint128, WasmMsg,
 };
 use cw20::Cw20ExecuteMsg;
 use protobuf::Message;

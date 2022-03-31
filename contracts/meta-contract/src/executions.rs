@@ -1,9 +1,9 @@
+use crate::state::{read_state, store_state, Cw20HookMsg, State};
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo,
-    Response, StdError, StdResult, SubMsg, Uint128, WasmMsg,
+    from_binary, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError,
+    StdResult, SubMsg, Uint128, WasmMsg,
 };
 use cw20::Cw20ReceiveMsg;
-use crate::state::{read_state, store_state, Cw20HookMsg, State};
 
 use messages::msg::PollInstantiateMsg;
 
