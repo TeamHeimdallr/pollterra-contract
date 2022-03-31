@@ -24,16 +24,11 @@ pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResul
     if env.block.time < Timestamp::from_seconds(state.start_time)
         || env.block.time >= Timestamp::from_seconds(state.bet_end_time)
     {
-        // update bet live state
-        state.bet_live = false;
         return Err(StdError::generic_err(format!(
             "Bet is not live. current block time: {}, start block time: {}, bet end time: {}",
             env.block.time, state.start_time, state.bet_end_time
         )));
     }
-
-    // update bet live state
-    state.bet_live = true;
 
     // Check if some funds are sent
     let sent = match info.funds.len() {
@@ -182,8 +177,6 @@ pub fn try_finish_poll(
 
     // Save the new state
     state.status = BetStatus::Reward;
-    state.bet_live = false;
-    state.reward_live = true;
     state.bet_end_time = 0;
 
     let mut cw20_msg = Cw20ExecuteMsg::Transfer {
@@ -250,8 +243,6 @@ pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> StdResult<Response> 
 
     // update bet status
     state.status = BetStatus::Closed;
-    state.bet_live = false;
-    state.reward_live = false;
     state.bet_end_time = 0;
 
     // TODO? USER_TOTAL_AMOUNT reset? not necessary
@@ -384,8 +375,6 @@ pub fn try_reset_poll(
     }
 
     state.status = BetStatus::Created;
-    state.bet_live = false;
-    state.reward_live = false;
     state.poll_name = poll_name;
     state.start_time = start_time;
     state.bet_end_time = bet_end_time;

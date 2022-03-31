@@ -13,8 +13,6 @@ pub struct PredictionPollConfig {
     pub deposit_reclaimed: bool,
     pub reclaimable_threshold: Uint128,
     pub status: PredictionPollStatus,
-    pub bet_live: bool,
-    pub reward_live: bool,
     pub poll_name: String,
     pub start_time: u64,
     pub bet_end_time: u64,

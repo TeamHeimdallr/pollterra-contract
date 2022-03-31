@@ -31,8 +31,6 @@ pub fn instantiate(
         deposit_reclaimed: false,
         reclaimable_threshold: msg.reclaimable_threshold,
         status: BetStatus::Created,
-        bet_live: false,
-        reward_live: false,
         poll_name: msg.poll_name,
         start_time: msg.start_time,
         bet_end_time: msg.bet_end_time,
@@ -79,7 +77,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
         QueryMsg::BetStatus {} => to_binary(&queries::query_bet_status(deps, _env)?),
         QueryMsg::BetLive {} => to_binary(&queries::query_bet_live(deps, _env)?),
-        QueryMsg::RewardLive {} => to_binary(&queries::query_reward_live(deps)?),
+        QueryMsg::RewardLive {} => to_binary(&queries::query_reward_live(deps, _env)?),
         QueryMsg::UserBet { address, side } => {
             to_binary(&queries::query_user_bet(deps, address, side)?)
         }

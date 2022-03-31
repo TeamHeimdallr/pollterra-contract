@@ -4,7 +4,6 @@
   "type": "object",
   "required": [
     "bet_end_time",
-    "bet_live",
     "deposit_amount",
     "deposit_reclaimed",
     "generator",
@@ -12,7 +11,6 @@
     "owner",
     "poll_name",
     "reclaimable_threshold",
-    "reward_live",
     "start_time",
     "status",
     "token_contract",
@@ -23,9 +21,6 @@
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
-    },
-    "bet_live": {
-      "type": "boolean"
     },
     "deposit_amount": {
       "$ref": "#/definitions/Uint128"
@@ -47,9 +42,6 @@
     },
     "reclaimable_threshold": {
       "$ref": "#/definitions/Uint128"
-    },
-    "reward_live": {
-      "type": "boolean"
     },
     "start_time": {
       "type": "integer",
