@@ -1,10 +1,10 @@
-use config::config::{PredictionPollConfig, PredictionPollStatus};
+use config::config::{PollStatus, PredictionPollConfig};
 use cosmwasm_std::{Addr, StdResult, Storage, Uint128};
 use cw_storage_plus::{Item, Map};
 
 pub type State = PredictionPollConfig;
 
-pub type BetStatus = PredictionPollStatus;
+pub type BetStatus = PollStatus;
 
 pub const BETS: Map<(&[u8], &Addr), Uint128> = Map::new("bets"); // (side, addr): amount
 pub const USER_TOTAL_AMOUNT: Map<&Addr, Uint128> = Map::new("user_total_amount"); // addr: amount

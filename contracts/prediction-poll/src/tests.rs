@@ -24,7 +24,6 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
         };
         let info = mock_info("creator", &[]);
@@ -35,7 +34,6 @@ mod prediction_poll_tests {
         assert_eq!(Addr::unchecked("generator"), value.generator);
         assert_eq!(DEPOSIT_AMOUNT, value.deposit_amount);
         assert_eq!("test_poll", value.poll_name);
-        assert_eq!(1643673600, value.start_time);
         assert_eq!(1653673600, value.bet_end_time);
     }
 
@@ -51,7 +49,6 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
         };
         let info = mock_info("creator", &[]);
@@ -91,7 +88,6 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
         };
         let info = mock_info("creator", &[]);
@@ -138,7 +134,6 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
         };
         let info = mock_info("creator", &[]);
@@ -182,7 +177,6 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
         };
         let info = mock_info("creator", &[]);
@@ -251,7 +245,6 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
         };
         let info = mock_info("creator", &[]);
@@ -281,7 +274,6 @@ mod prediction_poll_tests {
 
         let msg = ExecuteMsg::ResetPoll {
             poll_name: "ended_poll".to_string(),
-            start_time: 2643673600,
             bet_end_time: 2653673600,
         };
         let info = mock_info("creator", &[]);
@@ -328,7 +320,6 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 6300000,
             bet_end_time: 6400000,
         };
 

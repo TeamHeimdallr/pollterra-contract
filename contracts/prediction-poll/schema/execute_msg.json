@@ -80,8 +80,7 @@
           "type": "object",
           "required": [
             "bet_end_time",
-            "poll_name",
-            "start_time"
+            "poll_name"
           ],
           "properties": {
             "bet_end_time": {
@@ -91,11 +90,6 @@
             },
             "poll_name": {
               "type": "string"
-            },
-            "start_time": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
             }
           }
         }

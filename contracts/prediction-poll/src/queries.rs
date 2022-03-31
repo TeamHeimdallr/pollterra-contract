@@ -11,34 +11,20 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     Ok(state)
 }
 
-pub fn query_bet_status(deps: Deps, env: Env) -> StdResult<BetStatusResponse> {
-    let state = read_state(deps.storage)?;
-
-    let status = if state.status == BetStatus::Closed {
-        BetStatus::Closed
-    } else if env.block.time < Timestamp::from_seconds(state.start_time) {
-        BetStatus::Created
-    } else if env.block.time < Timestamp::from_seconds(state.bet_end_time) {
-        BetStatus::Betting
-    } else if state.status == BetStatus::Reward {
-        BetStatus::Reward
-    } else {
-        BetStatus::BetHold
-    };
-
+pub fn query_bet_status(deps: Deps) -> StdResult<BetStatusResponse> {
+    let status = read_state(deps.storage)?.status;
     Ok(BetStatusResponse { status })
 }
 
 pub fn query_bet_live(deps: Deps, env: Env) -> StdResult<BetLiveResponse> {
     let state = read_state(deps.storage)?;
-    let bet_live = env.block.time > Timestamp::from_seconds(state.start_time)
-        && env.block.time < Timestamp::from_seconds(state.bet_end_time);
+    let bet_live = env.block.time < Timestamp::from_seconds(state.bet_end_time);
 
     Ok(BetLiveResponse { bet_live })
 }
 
-pub fn query_reward_live(deps: Deps, env: Env) -> StdResult<RewardLiveResponse> {
-    let reward_live = query_bet_status(deps, env)?.status == BetStatus::Reward;
+pub fn query_reward_live(deps: Deps) -> StdResult<RewardLiveResponse> {
+    let reward_live = query_bet_status(deps)?.status == BetStatus::Reward;
     Ok(RewardLiveResponse { reward_live })
 }
 

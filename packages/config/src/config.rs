@@ -12,31 +12,26 @@ pub struct PredictionPollConfig {
     pub deposit_amount: Uint128,
     pub deposit_reclaimed: bool,
     pub reclaimable_threshold: Uint128,
-    pub status: PredictionPollStatus,
+    pub status: PollStatus,
     pub poll_name: String,
-    pub start_time: u64,
     pub bet_end_time: u64,
     pub total_amount: Uint128,
     pub minimum_bet: Uint128,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub enum PredictionPollStatus {
-    Created,
-    Betting,
-    BetHold,
+pub enum PollStatus {
+    Voting,
     Reward,
     Closed,
 }
 
-impl fmt::Display for PredictionPollStatus {
+impl fmt::Display for PollStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            PredictionPollStatus::Created => write!(f, "Created"),
-            PredictionPollStatus::Betting => write!(f, "Betting"),
-            PredictionPollStatus::BetHold => write!(f, "BetHold"),
-            PredictionPollStatus::Reward => write!(f, "Reward"),
-            PredictionPollStatus::Closed => write!(f, "Closed"),
+            PollStatus::Voting => write!(f, "Voting"),
+            PollStatus::Reward => write!(f, "Reward"),
+            PollStatus::Closed => write!(f, "Closed"),
         }
     }
 }

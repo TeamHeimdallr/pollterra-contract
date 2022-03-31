@@ -29,7 +29,6 @@ pub enum Cw20HookMsg {
     InitPoll {
         code_id: u64,
         poll_name: String,
-        start_time: u64,
         bet_end_time: u64,
     },
 }

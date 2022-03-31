@@ -8,7 +8,6 @@
     "generator",
     "poll_name",
     "reclaimable_threshold",
-    "start_time",
     "token_contract"
   ],
   "properties": {
@@ -28,11 +27,6 @@
     },
     "reclaimable_threshold": {
       "$ref": "#/definitions/Uint128"
-    },
-    "start_time": {
-      "type": "integer",
-      "format": "uint64",
-      "minimum": 0.0
     },
     "token_contract": {
       "type": "string"

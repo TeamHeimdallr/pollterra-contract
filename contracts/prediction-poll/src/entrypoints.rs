@@ -30,9 +30,8 @@ pub fn instantiate(
         deposit_amount: msg.deposit_amount,
         deposit_reclaimed: false,
         reclaimable_threshold: msg.reclaimable_threshold,
-        status: BetStatus::Created,
+        status: BetStatus::Voting,
         poll_name: msg.poll_name,
-        start_time: msg.start_time,
         bet_end_time: msg.bet_end_time,
         total_amount: Uint128::new(0),
         minimum_bet: DEFAULT_MINIMUM_BET,
@@ -60,9 +59,8 @@ pub fn execute(
         ExecuteMsg::Claim {} => executions::try_claim(deps, info),
         ExecuteMsg::ResetPoll {
             poll_name,
-            start_time,
             bet_end_time,
-        } => executions::try_reset_poll(deps, _env, info, poll_name, start_time, bet_end_time),
+        } => executions::try_reset_poll(deps, _env, info, poll_name, bet_end_time),
         ExecuteMsg::ReclaimDeposit {} => executions::try_reclaim_deposit(deps),
         ExecuteMsg::TransferOwner { new_owner } => {
             executions::try_transfer_owner(deps, info, new_owner)
@@ -75,9 +73,9 @@ pub fn execute(
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
-        QueryMsg::BetStatus {} => to_binary(&queries::query_bet_status(deps, _env)?),
+        QueryMsg::BetStatus {} => to_binary(&queries::query_bet_status(deps)?),
         QueryMsg::BetLive {} => to_binary(&queries::query_bet_live(deps, _env)?),
-        QueryMsg::RewardLive {} => to_binary(&queries::query_reward_live(deps, _env)?),
+        QueryMsg::RewardLive {} => to_binary(&queries::query_reward_live(deps)?),
         QueryMsg::UserBet { address, side } => {
             to_binary(&queries::query_user_bet(deps, address, side)?)
         }

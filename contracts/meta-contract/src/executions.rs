@@ -30,7 +30,6 @@ pub fn receive_cw20(
         Ok(Cw20HookMsg::InitPoll {
             code_id,
             poll_name,
-            start_time,
             bet_end_time,
         }) => init_poll(
             deps,
@@ -39,7 +38,6 @@ pub fn receive_cw20(
             cw20_msg.sender,
             cw20_msg.amount,
             poll_name,
-            start_time,
             bet_end_time,
         ),
         _ => Err(StdError::generic_err("Cw20Msg doesn't match")),
@@ -54,7 +52,6 @@ pub fn init_poll(
     generator: String,
     deposit_amount: Uint128,
     poll_name: String,
-    start_time: u64,
     bet_end_time: u64,
 ) -> StdResult<Response> {
     let state: State = read_state(deps.storage).unwrap();
@@ -76,7 +73,6 @@ pub fn init_poll(
             deposit_amount,
             reclaimable_threshold: state.reclaimable_threshold,
             poll_name: poll_name.clone(),
-            start_time,
             bet_end_time,
         })?,
         funds: vec![],

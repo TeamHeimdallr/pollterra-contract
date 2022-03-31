@@ -9,6 +9,5 @@ pub struct PollInstantiateMsg {
     pub deposit_amount: Uint128,
     pub reclaimable_threshold: Uint128,
     pub poll_name: String,
-    pub start_time: u64,
     pub bet_end_time: u64,
 }

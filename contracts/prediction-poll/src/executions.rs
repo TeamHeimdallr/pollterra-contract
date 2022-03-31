@@ -21,12 +21,10 @@ pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResul
     let mut state = read_state(deps.storage)?;
 
     // current block time is less than start time or larger than bet end time
-    if env.block.time < Timestamp::from_seconds(state.start_time)
-        || env.block.time >= Timestamp::from_seconds(state.bet_end_time)
-    {
+    if env.block.time >= Timestamp::from_seconds(state.bet_end_time) {
         return Err(StdError::generic_err(format!(
-            "Bet is not live. current block time: {}, start block time: {}, bet end time: {}",
-            env.block.time, state.start_time, state.bet_end_time
+            "Bet is not live. current block time: {}, bet end time: {}",
+            env.block.time, state.bet_end_time
         )));
     }
 
@@ -319,7 +317,6 @@ pub fn try_reset_poll(
     env: Env,
     info: MessageInfo,
     poll_name: String,
-    start_time: u64,
     bet_end_time: u64,
 ) -> StdResult<Response> {
     let mut state = read_state(deps.storage)?;
@@ -374,9 +371,8 @@ pub fn try_reset_poll(
         deps.storage.remove(&k);
     }
 
-    state.status = BetStatus::Created;
+    state.status = BetStatus::Voting;
     state.poll_name = poll_name;
-    state.start_time = start_time;
     state.bet_end_time = bet_end_time;
     state.total_amount = Uint128::zero();
 

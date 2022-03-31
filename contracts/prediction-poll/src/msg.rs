@@ -19,7 +19,6 @@ pub enum ExecuteMsg {
     Claim {},
     ResetPoll {
         poll_name: String,
-        start_time: u64,
         bet_end_time: u64,
     },
     ReclaimDeposit {},
