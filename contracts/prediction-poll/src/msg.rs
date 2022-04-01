@@ -1,4 +1,4 @@
-use crate::state::{BetStatus, State};
+use crate::state::{BetStatus, Config, State};
 use cosmwasm_std::Uint128;
 use messages::msg::PollInstantiateMsg;
 use schemars::JsonSchema;
@@ -34,6 +34,7 @@ pub enum ExecuteMsg {
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     Config {},
+    State {},
     BetLive {},
     RewardLive {},
     UserBet { address: String, side: u8 },
@@ -67,4 +68,5 @@ pub struct UserRewardsResponse {
     pub reward: Uint128,
 }
 
-pub type ConfigResponse = State;
+pub type ConfigResponse = Config;
+pub type StateResponse = State;

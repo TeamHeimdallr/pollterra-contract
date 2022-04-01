@@ -5,7 +5,7 @@ use cw20::Cw20ExecuteMsg;
 use protobuf::Message;
 
 use crate::response::MsgInstantiateContractResponse;
-use crate::state::{read_state, State, CONTRACTS};
+use crate::state::{read_config, read_state, store_state, Config, State, CONTRACTS};
 
 pub fn after_poll_init(deps: DepsMut, msg: Reply) -> StdResult<Response> {
     let reply_result = msg.result.unwrap();
@@ -17,7 +17,10 @@ pub fn after_poll_init(deps: DepsMut, msg: Reply) -> StdResult<Response> {
     let contract_address = res.get_contract_address();
 
     let addr = &deps.api.addr_validate(contract_address)?;
-    let _ = CONTRACTS.save(deps.storage, addr, &());
+    CONTRACTS.save(deps.storage, addr, &())?;
+    let mut state: State = read_state(deps.storage)?;
+    state.num_contract += 1;
+    store_state(deps.storage, &state)?;
 
     let event_vec: Vec<Event> = reply_result.events;
 
@@ -37,13 +40,13 @@ pub fn after_poll_init(deps: DepsMut, msg: Reply) -> StdResult<Response> {
     }
     let deposit_amount = Uint128::from(deposit_amount.unwrap().parse::<u128>().unwrap());
 
-    let state: State = read_state(deps.storage).unwrap();
+    let config: Config = read_config(deps.storage).unwrap();
 
     Ok(Response::new()
         .add_attribute("method", "reply")
         .add_attribute("contract_address", contract_address)
         .add_message(CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: state.token_contract,
+            contract_addr: config.token_contract,
             msg: to_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: contract_address.to_string(),
                 amount: deposit_amount,

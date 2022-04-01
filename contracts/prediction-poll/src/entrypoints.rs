@@ -6,15 +6,12 @@ use cw2::set_contract_version;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{BetStatus, State, STATE};
+use crate::state::{store_config, store_state, BetStatus, Config, State};
 use crate::{executions, queries};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:prediction-poll";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
-
-// TODO : set proper default values
-const DEFAULT_MINIMUM_BET: Uint128 = Uint128::new(1_000);
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -23,21 +20,28 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let state = State {
+    let config = Config {
         owner: info.sender.clone(),
         generator: msg.generator,
         token_contract: msg.token_contract,
-        deposit_amount: msg.deposit_amount,
-        deposit_reclaimed: false,
         reclaimable_threshold: msg.reclaimable_threshold,
-        status: BetStatus::Voting,
         poll_name: msg.poll_name,
         bet_end_time: msg.bet_end_time,
-        total_amount: Uint128::new(0),
-        minimum_bet: DEFAULT_MINIMUM_BET,
+        resolution_time: msg.resolution_time,
+        minimum_bet_amount: msg.minimum_bet_amount.unwrap(),
+        tax_percentage: msg.tax_percentage.unwrap(),
     };
+    let state = State {
+        deposit_amount: msg.deposit_amount,
+        deposit_reclaimed: false,
+        status: BetStatus::Voting,
+        total_amount: Uint128::new(0),
+        winning_side: None,
+    };
+
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-    STATE.save(deps.storage, &state)?;
+    store_state(deps.storage, &state)?;
+    store_config(deps.storage, &config)?;
 
     Ok(Response::new()
         .add_attribute("method", "instantiate")
@@ -65,7 +69,9 @@ pub fn execute(
         ExecuteMsg::TransferOwner { new_owner } => {
             executions::try_transfer_owner(deps, info, new_owner)
         }
-        ExecuteMsg::SetMinimumBet { amount } => executions::try_set_minimum_bet(deps, info, amount),
+        ExecuteMsg::SetMinimumBet { amount } => {
+            executions::try_set_minimun_bet_amount(deps, info, amount)
+        }
     }
 }
 
@@ -73,6 +79,7 @@ pub fn execute(
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
+        QueryMsg::State {} => to_binary(&queries::query_state(deps)?),
         QueryMsg::BetStatus {} => to_binary(&queries::query_bet_status(deps)?),
         QueryMsg::BetLive {} => to_binary(&queries::query_bet_live(deps, _env)?),
         QueryMsg::RewardLive {} => to_binary(&queries::query_reward_live(deps)?),

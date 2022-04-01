@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Uint128};
+use cosmwasm_std::{Addr, Decimal, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -10,4 +10,9 @@ pub struct PollInstantiateMsg {
     pub reclaimable_threshold: Uint128,
     pub poll_name: String,
     pub bet_end_time: u64,
+    pub resolution_time: u64,
+    // only for prediction poll
+    pub minimum_bet_amount: Option<Uint128>,
+    pub tax_percentage: Option<Decimal>,
+    // TODO : participation requirements for opinion poll
 }

@@ -17,6 +17,18 @@
     {
       "type": "object",
       "required": [
+        "state"
+      ],
+      "properties": {
+        "state": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "bet_live"
       ],
       "properties": {
