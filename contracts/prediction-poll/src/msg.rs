@@ -10,10 +10,10 @@ pub type InstantiateMsg = PollInstantiateMsg;
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     Bet {
-        side: u8,
+        side: u64,
     },
     FinishPoll {
-        winner: u8,
+        winner: u64,
     },
     RevertPoll {},
     Claim {},
@@ -37,7 +37,7 @@ pub enum QueryMsg {
     State {},
     BetLive {},
     RewardLive {},
-    UserBet { address: String, side: u8 },
+    UserBet { address: String, side: u64 },
     UserRewards { address: String },
     BetStatus {},
 }

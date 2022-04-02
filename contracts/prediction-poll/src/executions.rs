@@ -16,7 +16,7 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const DENOM: &str = "uusd";
 
-pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u8) -> StdResult<Response> {
+pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u64) -> StdResult<Response> {
     let addr = info.sender.clone();
 
     let config = read_config(deps.storage)?;
@@ -121,7 +121,7 @@ pub fn try_finish_poll(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    winner: u8,
+    winner: u64,
 ) -> StdResult<Response> {
     let config = read_config(deps.storage)?;
     let mut state = read_state(deps.storage)?;

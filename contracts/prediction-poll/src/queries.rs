@@ -35,7 +35,7 @@ pub fn query_reward_live(deps: Deps) -> StdResult<RewardLiveResponse> {
     Ok(RewardLiveResponse { reward_live })
 }
 
-pub fn query_user_bet(deps: Deps, address: String, side: u8) -> StdResult<UserBetResponse> {
+pub fn query_user_bet(deps: Deps, address: String, side: u64) -> StdResult<UserBetResponse> {
     let addr = deps.api.addr_validate(&address)?;
     let amount = match BETS.may_load(deps.storage, (&side.to_be_bytes(), &addr))? {
         None => Uint128::new(0),
