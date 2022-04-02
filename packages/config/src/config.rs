@@ -23,7 +23,7 @@ pub struct PollState {
     pub deposit_reclaimed: bool,
     pub status: PollStatus,
     pub total_amount: Uint128,
-    pub winning_side: Option<u8>,
+    pub winning_side: Option<Vec<u64>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

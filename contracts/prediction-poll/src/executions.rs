@@ -178,6 +178,7 @@ pub fn try_finish_poll(
 
     // Save the new state
     state.status = BetStatus::Reward;
+    state.winning_side = Some(vec![winner]);
 
     let mut cw20_msg = Cw20ExecuteMsg::Transfer {
         recipient: config.generator.to_string(),
