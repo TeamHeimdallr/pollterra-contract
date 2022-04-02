@@ -63,6 +63,7 @@ jobs:
       matrix:
         contract:
           - prediction-poll
+          - opinion-poll
           - meta-contract
           - governance
           - community
