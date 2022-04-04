@@ -1,5 +1,5 @@
 use config::config::{PollConfig, PollState, PollStatus};
-use cosmwasm_std::{Addr, StdResult, Storage, Uint128};
+use cosmwasm_std::{Addr, StdResult, Storage};
 use cw_storage_plus::{Item, Map};
 
 pub type Config = PollConfig;
@@ -7,10 +7,8 @@ pub type State = PollState;
 
 pub type BetStatus = PollStatus;
 
-pub const BETS: Map<(&[u8], &Addr), Uint128> = Map::new("bets"); // (side, addr): amount
-pub const USER_TOTAL_AMOUNT: Map<&Addr, Uint128> = Map::new("user_total_amount"); // addr: amount
-pub const SIDE_TOTAL_AMOUNT: Map<&[u8], Uint128> = Map::new("side_total_amount"); // side: amount
-pub const REWARDS: Map<&Addr, Uint128> = Map::new("rewards"); // addr: amount
+pub const VOTES: Map<&Addr, u64> = Map::new("votes"); // addr: side
+pub const SIDES: Map<&[u8], u64> = Map::new("sides"); // side(u64): count
 pub const CONFIG: Item<Config> = Item::new("config");
 pub const STATE: Item<State> = Item::new("state");
 

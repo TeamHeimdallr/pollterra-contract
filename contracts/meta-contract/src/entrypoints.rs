@@ -1,7 +1,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdError, StdResult,
-    Uint128,
+    to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdError,
+    StdResult, Uint128,
 };
 use cw2::set_contract_version;
 #[cfg(not(feature = "library"))]
@@ -9,7 +9,7 @@ use std::str;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{State, STATE};
+use crate::state::{store_config, store_state, Config, State};
 use crate::{executions, queries, replies};
 
 // version info for migration info
@@ -28,15 +28,18 @@ pub fn instantiate(
     info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let state = State {
+    let config = Config {
         owner: info.sender.clone(),
         token_contract: String::new(),
         creation_deposit: Uint128::zero(),
         reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
-        num_contract: 0,
+        minimum_bet_amount: Uint128::from(1_000u128),
+        tax_percentage: Decimal::percent(5),
     };
+    let state = State { num_contract: 0 };
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-    STATE.save(deps.storage, &state)?;
+    store_config(deps.storage, &config)?;
+    store_state(deps.storage, &state)?;
 
     Ok(Response::new()
         .add_attribute("method", "instantiate")

@@ -4,9 +4,9 @@ mod prediction_poll_tests {
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
 
     use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, UserBetResponse, UserRewardsResponse};
-    use crate::state::State;
+    use crate::state::{Config, State};
     use cosmwasm_std::{
-        coins, from_binary, Addr, BankMsg, Coin, CosmosMsg, Order, Timestamp, Uint128,
+        coins, from_binary, Addr, BankMsg, Coin, CosmosMsg, Decimal, Order, Timestamp, Uint128,
     };
 
     const DENOM: &str = "uusd";
@@ -24,19 +24,22 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
+            resolution_time: 1653673600,
+            minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
+            tax_percentage: Some(Decimal::zero()),
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg);
 
         let res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
-        let value: State = from_binary(&res).unwrap();
-        assert_eq!(Addr::unchecked("generator"), value.generator);
-        assert_eq!(DEPOSIT_AMOUNT, value.deposit_amount);
-        assert_eq!("test_poll", value.poll_name);
-        assert_eq!(1643673600, value.start_time);
-        assert_eq!(1653673600, value.bet_end_time);
+        let config: Config = from_binary(&res).unwrap();
+        let res = query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap();
+        let state: State = from_binary(&res).unwrap();
+        assert_eq!(Addr::unchecked("generator"), config.generator);
+        assert_eq!("test_poll", config.poll_name);
+        assert_eq!(1653673600, config.bet_end_time);
+        assert_eq!(DEPOSIT_AMOUNT, state.deposit_amount);
     }
 
     #[test]
@@ -51,8 +54,10 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
+            resolution_time: 1653673600,
+            minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
+            tax_percentage: Some(Decimal::zero()),
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -91,8 +96,10 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
+            resolution_time: 1653673600,
+            minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
+            tax_percentage: Some(Decimal::zero()),
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -138,8 +145,10 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
+            resolution_time: 1653673600,
+            minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
+            tax_percentage: Some(Decimal::zero()),
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -182,8 +191,10 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
+            resolution_time: 1653673600,
+            minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
+            tax_percentage: Some(Decimal::zero()),
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -251,8 +262,10 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 1643673600,
             bet_end_time: 1653673600,
+            resolution_time: 1653673600,
+            minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
+            tax_percentage: Some(Decimal::zero()),
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -276,12 +289,11 @@ mod prediction_poll_tests {
             .storage
             .range(None, None, Order::Ascending)
             .count();
-        // STATE, CONTRACT, (BETS, USERS_TOTAL_AMOUNT, SIDE_TOTAL_AMOUNT) * 2, REWARDS
-        assert_eq!(9, cnt);
+        // CONFIG, STATE, CONTRACT, (BETS, USERS_TOTAL_AMOUNT, SIDE_TOTAL_AMOUNT) * 2, REWARDS
+        assert_eq!(10, cnt);
 
         let msg = ExecuteMsg::ResetPoll {
             poll_name: "ended_poll".to_string(),
-            start_time: 2643673600,
             bet_end_time: 2653673600,
         };
         let info = mock_info("creator", &[]);
@@ -328,8 +340,10 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
-            start_time: 6300000,
             bet_end_time: 6400000,
+            resolution_time: 6400000,
+            minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
+            tax_percentage: Some(Decimal::zero()),
         };
 
         let info = mock_info("creator", &[]);
@@ -340,7 +354,7 @@ mod prediction_poll_tests {
         let res = query(deps.as_ref(), env.clone(), msg).unwrap();
         assert_eq!(
             DEFAULT_MINIMUM_BET,
-            from_binary::<State>(&res).unwrap().minimum_bet
+            from_binary::<Config>(&res).unwrap().minimum_bet_amount
         );
 
         let info = mock_info("creator", &[]);
@@ -351,7 +365,7 @@ mod prediction_poll_tests {
         let res = query(deps.as_ref(), env.clone(), msg).unwrap();
         assert_eq!(
             Uint128::from(2_000u128),
-            from_binary::<State>(&res).unwrap().minimum_bet
+            from_binary::<Config>(&res).unwrap().minimum_bet_amount
         );
 
         // transfer_owner
@@ -359,7 +373,7 @@ mod prediction_poll_tests {
         let res = query(deps.as_ref(), env.clone(), msg).unwrap();
         assert_eq!(
             "creator",
-            from_binary::<State>(&res).unwrap().owner.as_str()
+            from_binary::<Config>(&res).unwrap().owner.as_str()
         );
 
         let msg = ExecuteMsg::TransferOwner {
@@ -370,6 +384,6 @@ mod prediction_poll_tests {
 
         let msg = QueryMsg::Config {};
         let res = query(deps.as_ref(), env, msg).unwrap();
-        assert_eq!("user1", from_binary::<State>(&res).unwrap().owner.as_str());
+        assert_eq!("user1", from_binary::<Config>(&res).unwrap().owner.as_str());
     }
 }

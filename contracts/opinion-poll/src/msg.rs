@@ -1,33 +1,19 @@
-use crate::state::{BetStatus, Config, State};
-use cosmwasm_std::Uint128;
+use crate::state::{Config, State};
 use messages::msg::PollInstantiateMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+use config::config::PollStatus;
 
 pub type InstantiateMsg = PollInstantiateMsg;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    Bet {
-        side: u64,
-    },
-    FinishPoll {
-        winner: u64,
-    },
-    RevertPoll {},
-    Claim {},
-    ResetPoll {
-        poll_name: String,
-        bet_end_time: u64,
-    },
+    Vote { side: u64 },
+    FinishPoll {},
     ReclaimDeposit {},
-    TransferOwner {
-        new_owner: String,
-    },
-    SetMinimumBet {
-        amount: u128,
-    },
+    TransferOwner { new_owner: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -35,37 +21,31 @@ pub enum ExecuteMsg {
 pub enum QueryMsg {
     Config {},
     State {},
-    BetLive {},
-    RewardLive {},
-    UserBet { address: String, side: u64 },
-    UserRewards { address: String },
-    BetStatus {},
+    PollStatus {},
+    VoteLive {},
+    VoteCount { side: u64 },
+    UserVote { address: String },
 }
 
 // We define a custom struct for each query response
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct BetLiveResponse {
-    pub bet_live: bool,
+pub struct PollStatusResponse {
+    pub status: PollStatus,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct RewardLiveResponse {
-    pub reward_live: bool,
+pub struct VoteLiveResponse {
+    pub vote_live: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct BetStatusResponse {
-    pub status: BetStatus,
+pub struct VoteCountResponse {
+    pub count: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct UserBetResponse {
-    pub amount: Uint128,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct UserRewardsResponse {
-    pub reward: Uint128,
+pub struct UserVoteResponse {
+    pub side: Option<u64>,
 }
 
 pub type ConfigResponse = Config;

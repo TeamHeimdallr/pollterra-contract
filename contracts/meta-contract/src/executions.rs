@@ -1,4 +1,4 @@
-use crate::state::{read_state, store_state, Cw20HookMsg, State};
+use crate::state::{read_config, store_config, Config, Cw20HookMsg};
 use cosmwasm_std::{
     from_binary, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError,
     StdResult, SubMsg, Uint128, WasmMsg,
@@ -16,12 +16,12 @@ pub fn receive_cw20(
     info: MessageInfo,
     cw20_msg: Cw20ReceiveMsg,
 ) -> Result<Response, StdError> {
-    let state: State = read_state(deps.storage).unwrap();
-    if state.token_contract != deps.api.addr_validate(info.sender.as_str())? {
+    let config: Config = read_config(deps.storage).unwrap();
+    if config.token_contract != deps.api.addr_validate(info.sender.as_str())? {
         return Err(StdError::generic_err("Incorrect token contract"));
     }
 
-    let creation_deposit: Uint128 = state.creation_deposit;
+    let creation_deposit: Uint128 = config.creation_deposit;
     if creation_deposit > cw20_msg.amount {
         return Err(StdError::generic_err("Insufficient token amount"));
     }
@@ -30,8 +30,8 @@ pub fn receive_cw20(
         Ok(Cw20HookMsg::InitPoll {
             code_id,
             poll_name,
-            start_time,
             bet_end_time,
+            resolution_time,
         }) => init_poll(
             deps,
             info,
@@ -39,8 +39,8 @@ pub fn receive_cw20(
             cw20_msg.sender,
             cw20_msg.amount,
             poll_name,
-            start_time,
             bet_end_time,
+            resolution_time,
         ),
         _ => Err(StdError::generic_err("Cw20Msg doesn't match")),
     }
@@ -54,16 +54,16 @@ pub fn init_poll(
     generator: String,
     deposit_amount: Uint128,
     poll_name: String,
-    start_time: u64,
     bet_end_time: u64,
+    resolution_time: u64,
 ) -> StdResult<Response> {
-    let state: State = read_state(deps.storage).unwrap();
-    let contract_owner: Addr = state.owner;
+    let config: Config = read_config(deps.storage).unwrap();
+    let contract_owner: Addr = config.owner;
 
-    if state.creation_deposit != deposit_amount {
+    if config.creation_deposit != deposit_amount {
         return Err(StdError::generic_err(format!(
             "deposit amount should be {}",
-            state.creation_deposit
+            config.creation_deposit
         )));
     }
 
@@ -72,12 +72,14 @@ pub fn init_poll(
         code_id,
         msg: to_binary(&PollInstantiateMsg {
             generator: deps.api.addr_validate(&generator)?,
-            token_contract: state.token_contract,
+            token_contract: config.token_contract,
             deposit_amount,
-            reclaimable_threshold: state.reclaimable_threshold,
+            reclaimable_threshold: config.reclaimable_threshold,
             poll_name: poll_name.clone(),
-            start_time,
             bet_end_time,
+            resolution_time,
+            minimum_bet_amount: Some(config.minimum_bet_amount),
+            tax_percentage: Some(config.tax_percentage),
         })?,
         funds: vec![],
         label: poll_name,
@@ -96,20 +98,20 @@ pub fn register_token_contract(
     token_contract: String,
     creation_deposit: Uint128,
 ) -> StdResult<Response> {
-    let mut state: State = read_state(deps.storage).unwrap();
-    if !String::new().eq(&state.token_contract) {
+    let mut config: Config = read_config(deps.storage).unwrap();
+    if !String::new().eq(&config.token_contract) {
         return Err(StdError::generic_err("already registered"));
     }
 
-    if info.sender != state.owner {
+    if info.sender != config.owner {
         return Err(StdError::generic_err(
             "only the original owner can register a token contract",
         ));
     }
 
-    state.token_contract = deps.api.addr_validate(&token_contract)?.to_string();
-    state.creation_deposit = creation_deposit;
-    store_state(deps.storage, &state)?;
+    config.token_contract = deps.api.addr_validate(&token_contract)?.to_string();
+    config.creation_deposit = creation_deposit;
+    store_config(deps.storage, &config)?;
 
     Ok(Response::new().add_attribute("method", "register_token_contract"))
 }
@@ -120,19 +122,19 @@ pub fn update_creation_deposit(
     info: MessageInfo,
     creation_deposit: Uint128,
 ) -> StdResult<Response> {
-    let mut state: State = read_state(deps.storage).unwrap();
-    if String::new().eq(&state.token_contract) {
+    let mut config: Config = read_config(deps.storage).unwrap();
+    if String::new().eq(&config.token_contract) {
         return Err(StdError::generic_err("token not registered"));
     }
 
-    if info.sender != state.owner {
+    if info.sender != config.owner {
         return Err(StdError::generic_err(
             "only the original owner can update creation deposit amount",
         ));
     }
 
-    state.creation_deposit = creation_deposit;
-    store_state(deps.storage, &state)?;
+    config.creation_deposit = creation_deposit;
+    store_config(deps.storage, &config)?;
 
     Ok(Response::new().add_attribute("method", "update_creatoin_deposit"))
 }
@@ -142,16 +144,16 @@ pub fn update_reclaimable_threshold(
     info: MessageInfo,
     reclaimable_threshold: Uint128,
 ) -> StdResult<Response> {
-    let mut state: State = read_state(deps.storage).unwrap();
+    let mut config: Config = read_config(deps.storage).unwrap();
 
-    if info.sender != state.owner {
+    if info.sender != config.owner {
         return Err(StdError::generic_err(
             "only the original owner can update reclaimable threshold amount",
         ));
     }
 
-    state.reclaimable_threshold = reclaimable_threshold;
-    store_state(deps.storage, &state)?;
+    config.reclaimable_threshold = reclaimable_threshold;
+    store_config(deps.storage, &config)?;
 
     Ok(Response::new().add_attribute("method", "update_reclaimable_threshold"))
 }
@@ -161,14 +163,14 @@ pub fn try_transfer_owner(
     info: MessageInfo,
     new_owner: String,
 ) -> StdResult<Response> {
-    let mut state = read_state(deps.storage)?;
-    if info.sender != state.owner {
+    let mut config = read_config(deps.storage)?;
+    if info.sender != config.owner {
         return Err(StdError::generic_err(
             "only the original owner can transfer the ownership",
         ));
     }
-    state.owner = deps.api.addr_validate(&new_owner)?;
-    store_state(deps.storage, &state)?;
+    config.owner = deps.api.addr_validate(&new_owner)?;
+    store_config(deps.storage, &config)?;
 
     Ok(Response::new().add_attribute("method", "try_transfer_owner"))
 }

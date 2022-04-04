@@ -1,6 +1,6 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
+    to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
 };
 use cw2::set_contract_version;
 
@@ -10,7 +10,7 @@ use crate::state::{store_config, store_state, BetStatus, Config, State};
 use crate::{executions, queries};
 
 // version info for migration info
-const CONTRACT_NAME: &str = "crates.io:prediction-poll";
+const CONTRACT_NAME: &str = "crates.io:opinion-poll";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -28,8 +28,9 @@ pub fn instantiate(
         poll_name: msg.poll_name,
         bet_end_time: msg.bet_end_time,
         resolution_time: msg.resolution_time,
-        minimum_bet_amount: msg.minimum_bet_amount.unwrap(),
-        tax_percentage: msg.tax_percentage.unwrap(),
+        // config for prediction poll. not used here.
+        minimum_bet_amount: Uint128::zero(),
+        tax_percentage: Decimal::zero(),
     };
     let state = State {
         deposit_amount: msg.deposit_amount,
@@ -57,20 +58,11 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> StdResult<Response> {
     match msg {
-        ExecuteMsg::Bet { side } => executions::try_bet(deps, _env, info, side),
-        ExecuteMsg::FinishPoll { winner } => executions::try_finish_poll(deps, _env, info, winner),
-        ExecuteMsg::RevertPoll {} => executions::try_revert_poll(deps, info),
-        ExecuteMsg::Claim {} => executions::try_claim(deps, info),
-        ExecuteMsg::ResetPoll {
-            poll_name,
-            bet_end_time,
-        } => executions::try_reset_poll(deps, _env, info, poll_name, bet_end_time),
-        ExecuteMsg::ReclaimDeposit {} => executions::try_reclaim_deposit(deps),
+        ExecuteMsg::Vote { side } => executions::vote(deps, _env, info, side),
+        ExecuteMsg::FinishPoll {} => executions::finish_poll(deps, _env, info),
+        ExecuteMsg::ReclaimDeposit {} => executions::reclaim_deposit(deps),
         ExecuteMsg::TransferOwner { new_owner } => {
-            executions::try_transfer_owner(deps, info, new_owner)
-        }
-        ExecuteMsg::SetMinimumBet { amount } => {
-            executions::try_set_minimun_bet_amount(deps, info, amount)
+            executions::transfer_owner(deps, info, new_owner)
         }
     }
 }
@@ -80,14 +72,9 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
         QueryMsg::State {} => to_binary(&queries::query_state(deps)?),
-        QueryMsg::BetStatus {} => to_binary(&queries::query_bet_status(deps)?),
-        QueryMsg::BetLive {} => to_binary(&queries::query_bet_live(deps, _env)?),
-        QueryMsg::RewardLive {} => to_binary(&queries::query_reward_live(deps)?),
-        QueryMsg::UserBet { address, side } => {
-            to_binary(&queries::query_user_bet(deps, address, side)?)
-        }
-        QueryMsg::UserRewards { address } => {
-            to_binary(&queries::query_user_rewards(deps, address)?)
-        }
+        QueryMsg::PollStatus {} => to_binary(&queries::query_poll_status(deps)?),
+        QueryMsg::VoteLive {} => to_binary(&queries::query_vote_live(deps, _env)?),
+        QueryMsg::VoteCount { side } => to_binary(&queries::query_vote_count(deps, side)?),
+        QueryMsg::UserVote { address } => to_binary(&queries::query_user_vote(deps, address)?),
     }
 }

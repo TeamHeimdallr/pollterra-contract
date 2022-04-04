@@ -29,10 +29,10 @@
     {
       "type": "object",
       "required": [
-        "bet_live"
+        "poll_status"
       ],
       "properties": {
-        "bet_live": {
+        "poll_status": {
           "type": "object"
         }
       },
@@ -41,10 +41,10 @@
     {
       "type": "object",
       "required": [
-        "reward_live"
+        "vote_live"
       ],
       "properties": {
-        "reward_live": {
+        "vote_live": {
           "type": "object"
         }
       },
@@ -53,22 +53,18 @@
     {
       "type": "object",
       "required": [
-        "user_bet"
+        "vote_count"
       ],
       "properties": {
-        "user_bet": {
+        "vote_count": {
           "type": "object",
           "required": [
-            "address",
             "side"
           ],
           "properties": {
-            "address": {
-              "type": "string"
-            },
             "side": {
               "type": "integer",
-              "format": "uint8",
+              "format": "uint64",
               "minimum": 0.0
             }
           }
@@ -79,10 +75,10 @@
     {
       "type": "object",
       "required": [
-        "user_rewards"
+        "user_vote"
       ],
       "properties": {
-        "user_rewards": {
+        "user_vote": {
           "type": "object",
           "required": [
             "address"
@@ -92,18 +88,6 @@
               "type": "string"
             }
           }
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
-        "bet_status"
-      ],
-      "properties": {
-        "bet_status": {
-          "type": "object"
         }
       },
       "additionalProperties": false
