@@ -283,7 +283,7 @@ pub fn try_reclaim_deposit(deps: DepsMut) -> Result<Response, ContractError> {
     }
 
     if state.total_amount < config.reclaimable_threshold {
-        return Err(ContractError::NotEnoughTotalAmount(
+        return Err(ContractError::InsufficientReclaimableThreshold(
             state.total_amount,
             config.reclaimable_threshold,
         ));
