@@ -199,7 +199,7 @@ mod meta_contract_tests {
         match entrypoints::execute(deps.as_mut(), mock_env(), info, msg) {
             Ok(_) => panic!("Must return error"),
             Err(ContractError::InvalidPollType {}) => (),
-            Err(_) => panic!("Unkwon error"),
+            Err(_) => panic!("Unknown error"),
         };
     }
 }
