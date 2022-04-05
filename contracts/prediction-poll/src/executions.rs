@@ -54,7 +54,7 @@ pub fn try_bet(
     }
 
     if sent < config.minimum_bet_amount {
-        return Err(ContractError::LessThanMinimumAmount(
+        return Err(ContractError::LessThanMinimumBetAmount(
             config.minimum_bet_amount,
         ));
     }

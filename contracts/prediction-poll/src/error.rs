@@ -33,7 +33,7 @@ pub enum ContractError {
     AlreadyReclaimed {},
 
     #[error("The bet amount should be over {0}")]
-    LessThanMinimumAmount(Uint128),
+    LessThanMinimumBetAmount(Uint128),
 
     #[error("Only send ust to bet")]
     OnlyUstAvailable {},
