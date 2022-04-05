@@ -50,7 +50,7 @@ pub enum ContractError {
     #[error("You can't reset the poll until the poll is closed")]
     ResetBeforeClosed {},
 
-    #[error("Cannot claim rewrads, current status: {0}")]
+    #[error("Cannot claim rewards, current status: {0}")]
     CannotClaimRewards(PollStatus),
 
     #[error("Not enough total amount to reclaim the deposit, {0} is less than {1}")]
