@@ -53,8 +53,8 @@ pub enum ContractError {
     #[error("Cannot claim rewrads, current status: {0}")]
     CannotClaimRewards(PollStatus),
 
-    #[error("Not enough total amount, {0} is less than {1}")]
-    NotEnoughTotalAmount(Uint128, Uint128),
+    #[error("Not enough total amount to reclaim the deposit, {0} is less than {1}")]
+    InsufficientReclaimableThreshold(Uint128, Uint128),
     // Add any other custom errors you like here.
     // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
 }
