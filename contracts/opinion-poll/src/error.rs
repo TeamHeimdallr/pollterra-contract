@@ -12,13 +12,13 @@ pub enum ContractError {
     #[error("Vote is not live. current block time: {0}, vote end time: {1}")]
     VoteIsNotLive(Timestamp, u64),
 
-    #[error("already participated")]
+    #[error("Already participated")]
     AlreadyParticipated {},
 
-    #[error("you'd better not send funds")]
+    #[error("You'd better not send funds")]
     NotEmptyFunds {},
 
-    #[error("already finished poll")]
+    #[error("Already finished poll")]
     AlreadyFinishedPoll {},
 
     #[error("Vote is live now, The poll cannot be finished before the end time")]

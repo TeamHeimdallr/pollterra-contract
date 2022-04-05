@@ -13,25 +13,25 @@ pub enum ContractError {
     #[error("Invalid reply id")]
     InvalidReplyId {},
 
-    #[error("incorrect token contract")]
+    #[error("Incorrect token contract")]
     IncorrectTokenContract {},
 
     #[error("Must deposit more than {0} token")]
     InsufficientTokenDeposit(Uint128),
 
-    #[error("Inssuficient Balance")]
-    InssuficientBalance {},
+    #[error("Insufficient balance")]
+    InsufficientBalance {},
 
     #[error("Cw20Msg doesn't match")]
     InvalidCw20Msg {},
 
-    #[error("token contract is already registered")]
+    #[error("Token contract is already registered")]
     TokenAlreadyRegistered {},
 
-    #[error("token contract is not registered")]
+    #[error("Token contract is not registered")]
     TokenNotRegistered {},
 
-    #[error("poll type should be one of (prediction | opinion)")]
+    #[error("Poll type should be one of (prediction | opinion)")]
     InvalidPollType {},
     // Add any other custom errors you like here.
     // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.

@@ -38,7 +38,7 @@ pub fn after_poll_init(deps: DepsMut, msg: Reply) -> Result<Response, ContractEr
     }
 
     if deposit_amount.is_none() {
-        return Err(ContractError::InssuficientBalance {});
+        return Err(ContractError::InsufficientBalance {});
     }
     let deposit_amount = Uint128::from(deposit_amount.unwrap().parse::<u128>().unwrap());
 

@@ -17,16 +17,16 @@ pub enum ContractError {
     #[error("Bet is not live. current block time: {0}, bet end time: {1}")]
     BetIsNotLive(Timestamp, u64),
 
-    #[error("already participated")]
+    #[error("Already participated")]
     AlreadyParticipated {},
 
-    #[error("you need to send some ust in order to bet")]
+    #[error("You need to send some ust in order to bet")]
     EmptyFunds {},
 
-    #[error("you'd better not send funds")]
+    #[error("You'd better not send funds")]
     NotEmptyFunds {},
 
-    #[error("already finished poll")]
+    #[error("Already finished poll")]
     AlreadyFinishedPoll {},
 
     #[error("Vote is live now, The poll cannot be finished before the end time")]
@@ -38,19 +38,19 @@ pub enum ContractError {
     #[error("The bet amount should be over {0}")]
     LessThanMinimumAmount(Uint128),
 
-    #[error("only send ust to bet")]
+    #[error("Only send ust to bet")]
     OnlyUstAvailable {},
 
-    #[error("already reverted poll")]
+    #[error("Already reverted poll")]
     AlreadyReverted {},
 
-    #[error("there's no rewards to claim")]
+    #[error("There's no rewards to claim")]
     EmptyRewards {},
 
     #[error("You can't reset the poll until the poll is closed")]
     ResetBeforeClosed {},
 
-    #[error("cannot claim rewrads, current status: {0}")]
+    #[error("Cannot claim rewrads, current status: {0}")]
     CannotClaimRewards(PollStatus),
 
     #[error("Not enough total amount, {0} is less than {1}")]
