@@ -189,7 +189,7 @@ mod meta_contract_tests {
             msg: to_binary(&Cw20HookMsg::InitPoll {
                 code_id: TEST_CODE_ID,
                 poll_name: "test_poll".to_string(),
-                poll_type: "prediction".to_string(),
+                poll_type: "Wrong Poll Type".to_string(),
                 bet_end_time: 1653673600,
                 resolution_time: 1653673600,
             })
