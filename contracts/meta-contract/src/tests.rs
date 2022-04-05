@@ -1,13 +1,13 @@
 #[cfg(test)]
 mod meta_contract_tests {
-    // use crate::error::ContractError;
+    use crate::error::ContractError;
     use crate::state::Cw20HookMsg;
 
     use config::config::PollType;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
     use cosmwasm_std::{
-        attr, to_binary, Binary, ContractResult, CosmosMsg, Decimal, Event, Reply, StdError,
-        SubMsg, SubMsgExecutionResponse, Uint128, WasmMsg,
+        attr, to_binary, Binary, ContractResult, CosmosMsg, Decimal, Event, Reply, SubMsg,
+        SubMsgExecutionResponse, Uint128, WasmMsg,
     };
     use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
     use protobuf::Message;
@@ -196,13 +196,10 @@ mod meta_contract_tests {
             .unwrap(),
         });
 
-        let err_msg = match entrypoints::execute(deps.as_mut(), mock_env(), info, msg) {
+        match entrypoints::execute(deps.as_mut(), mock_env(), info, msg) {
             Ok(_) => panic!("Must return error"),
-            Err(v) => (v),
+            Err(ContractError::InvalidPollType {}) => (),
+            Err(_) => panic!("Unkwon error"),
         };
-        assert_eq!(
-            err_msg,
-            StdError::generic_err("poll type should be one of (prediction | opinion)")
-        );
     }
 }
