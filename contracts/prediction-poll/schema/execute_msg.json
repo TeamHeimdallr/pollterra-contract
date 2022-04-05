@@ -16,7 +16,7 @@
           "properties": {
             "side": {
               "type": "integer",
-              "format": "uint8",
+              "format": "uint64",
               "minimum": 0.0
             }
           }
@@ -38,7 +38,7 @@
           "properties": {
             "winner": {
               "type": "integer",
-              "format": "uint8",
+              "format": "uint64",
               "minimum": 0.0
             }
           }
