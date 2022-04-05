@@ -196,11 +196,9 @@ mod meta_contract_tests {
             .unwrap(),
         });
 
-        assert!(
-            match entrypoints::execute(deps.as_mut(), mock_env(), info, msg) {
-                Err(ContractError::InvalidPollType {}) => true,
-                _ => false,
-            }
-        );
+        assert!(matches!(
+            entrypoints::execute(deps.as_mut(), mock_env(), info, msg),
+            Err(ContractError::InvalidPollType {})
+        ));
     }
 }
