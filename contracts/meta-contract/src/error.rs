@@ -1,5 +1,4 @@
-use cosmwasm_std::StdError;
-use cosmwasm_std::Uint128;
+use cosmwasm_std::{StdError, Uint128};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
