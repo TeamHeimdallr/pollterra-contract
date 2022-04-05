@@ -63,7 +63,7 @@ mod prediction_poll_tests {
 
         let info = mock_info("user", &[]);
         let msg = ExecuteMsg::Vote { side: 0 };
-        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+        let _res = execute(deps.as_mut(), env, info, msg).unwrap();
 
         let res = query(
             deps.as_ref(),
