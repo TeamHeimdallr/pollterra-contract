@@ -26,6 +26,7 @@ pub fn instantiate(
         token_contract: msg.token_contract,
         reclaimable_threshold: msg.reclaimable_threshold,
         poll_name: msg.poll_name,
+        poll_type: msg.poll_type,
         bet_end_time: msg.bet_end_time,
         resolution_time: msg.resolution_time,
         minimum_bet_amount: msg.minimum_bet_amount.unwrap(),

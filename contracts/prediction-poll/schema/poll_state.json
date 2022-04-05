@@ -23,11 +23,14 @@
     },
     "winning_side": {
       "type": [
-        "integer",
+        "array",
         "null"
       ],
-      "format": "uint8",
-      "minimum": 0.0
+      "items": {
+        "type": "integer",
+        "format": "uint64",
+        "minimum": 0.0
+      }
     }
   },
   "definitions": {

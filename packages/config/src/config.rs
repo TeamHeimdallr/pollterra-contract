@@ -10,6 +10,7 @@ pub struct PollConfig {
     pub token_contract: String,
     pub reclaimable_threshold: Uint128,
     pub poll_name: String,
+    pub poll_type: PollType,
     pub bet_end_time: u64,
     pub resolution_time: u64,
     // only for prediction poll
@@ -31,6 +32,12 @@ pub enum PollStatus {
     Voting,
     Reward,
     Closed,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub enum PollType {
+    Prediction,
+    Opinion,
 }
 
 impl fmt::Display for PollStatus {

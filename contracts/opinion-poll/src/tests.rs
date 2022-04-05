@@ -5,6 +5,7 @@ mod prediction_poll_tests {
 
     use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, UserVoteResponse};
     use crate::state::{Config, State};
+    use config::config::PollType;
     use cosmwasm_std::{from_binary, Addr, Timestamp, Uint128};
 
     const DEFAULT_RECLAIMABLE_THRESHOLD: Uint128 = Uint128::new(100);
@@ -20,6 +21,7 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
+            poll_type: PollType::Opinion,
             bet_end_time: 1653673600,
             resolution_time: 1653673600,
             minimum_bet_amount: None,
@@ -50,6 +52,7 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
+            poll_type: PollType::Opinion,
             bet_end_time: 1653673600,
             resolution_time: 1653673600,
             minimum_bet_amount: None,
@@ -60,7 +63,7 @@ mod prediction_poll_tests {
 
         let info = mock_info("user", &[]);
         let msg = ExecuteMsg::Vote { side: 0 };
-        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+        let _res = execute(deps.as_mut(), env, info, msg).unwrap();
 
         let res = query(
             deps.as_ref(),
@@ -98,6 +101,7 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
+            poll_type: PollType::Opinion,
             bet_end_time: 1653673600,
             resolution_time: 1653673600,
             minimum_bet_amount: None,
@@ -141,6 +145,7 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
+            poll_type: PollType::Opinion,
             bet_end_time: 1653673600,
             resolution_time: 1653673600,
             minimum_bet_amount: None,
@@ -188,6 +193,7 @@ mod prediction_poll_tests {
             deposit_amount: DEPOSIT_AMOUNT,
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
+            poll_type: PollType::Opinion,
             bet_end_time: 6400000,
             resolution_time: 6400000,
             minimum_bet_amount: None,

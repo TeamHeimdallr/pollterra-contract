@@ -8,3 +8,4 @@ edition = "2018"
 schemars = "0.8.3"
 serde = { version = "1.0.127", default-features = false, features = ["derive"] }
 cosmwasm-std = { version = "0.16.2" }
+config = { path = "../../packages/config", version = "0.1.0" }

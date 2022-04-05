@@ -1,3 +1,4 @@
+use config::config::PollType;
 use cosmwasm_std::{Addr, Decimal, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -9,6 +10,7 @@ pub struct PollInstantiateMsg {
     pub deposit_amount: Uint128,
     pub reclaimable_threshold: Uint128,
     pub poll_name: String,
+    pub poll_type: PollType,
     pub bet_end_time: u64,
     pub resolution_time: u64,
     // only for prediction poll
