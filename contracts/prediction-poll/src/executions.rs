@@ -1,6 +1,7 @@
+use crate::error::ContractError;
 use cosmwasm_std::{
     to_binary, BankMsg, Coin, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Order, Response,
-    StdError, StdResult, Timestamp, Uint128, WasmMsg,
+    StdResult, Timestamp, Uint128, WasmMsg,
 };
 use cw2::set_contract_version;
 use cw20::Cw20ExecuteMsg;
@@ -11,53 +12,51 @@ use crate::state::{
     SIDE_TOTAL_AMOUNT, STATE, USER_TOTAL_AMOUNT,
 };
 // version info for migration info
-const CONTRACT_NAME: &str = "crates.io:pollterra-contract";
+const CONTRACT_NAME: &str = "crates.io:prediction-contract";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const DENOM: &str = "uusd";
 
-pub fn try_bet(deps: DepsMut, env: Env, info: MessageInfo, side: u64) -> StdResult<Response> {
+pub fn try_bet(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    side: u64,
+) -> Result<Response, ContractError> {
     let addr = info.sender.clone();
 
     let config = read_config(deps.storage)?;
 
     // current block time is less than start time or larger than bet end time
     if env.block.time >= Timestamp::from_seconds(config.bet_end_time) {
-        return Err(StdError::generic_err(format!(
-            "Bet is not live. current block time: {}, bet end time: {}",
-            env.block.time, config.bet_end_time
-        )));
+        return Err(ContractError::BetIsNotLive(
+            env.block.time,
+            config.bet_end_time,
+        ));
     }
 
     // Check if some funds are sent
     let sent = match info.funds.len() {
-        0 => Err(StdError::generic_err(
-            "you need to send some ust in order to bet",
-        )),
+        0 => Err(ContractError::EmptyFunds {}),
         1 => {
             if info.funds[0].denom == DENOM {
                 Ok(info.funds[0].amount)
             } else {
-                Err(StdError::generic_err(
-                    "you need to send ust in order to bet",
-                ))
+                Err(ContractError::EmptyFunds {})
             }
         }
-        _ => Err(StdError::generic_err("Only send ust to bet")),
+        _ => Err(ContractError::OnlyUstAvailable {}),
     }?;
 
     // sent 0 ust case
     if sent.is_zero() {
-        return Err(StdError::generic_err(
-            "you need to send some ust in order to bet",
-        ));
+        return Err(ContractError::EmptyFunds {});
     }
 
     if sent < config.minimum_bet_amount {
-        return Err(StdError::generic_err(format!(
-            "The bet amount should be over {}",
-            config.minimum_bet_amount
-        )));
+        return Err(ContractError::LessThanMinimumAmount(
+            config.minimum_bet_amount,
+        ));
     }
 
     // add bet amount to BETS state (accumulate single side)
@@ -122,27 +121,23 @@ pub fn try_finish_poll(
     env: Env,
     info: MessageInfo,
     winner: u64,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let config = read_config(deps.storage)?;
     let mut state = read_state(deps.storage)?;
 
     // only contract's owner can finish poll
     if info.sender != config.owner {
-        return Err(StdError::generic_err(
-            "only the original owner can finish poll",
-        ));
+        return Err(ContractError::Unauthorized {});
     }
 
     // already finished
     if state.status == BetStatus::Closed || state.status == BetStatus::Reward {
-        return Err(StdError::generic_err("already finished poll"));
+        return Err(ContractError::AlreadyFinishedPoll {});
     }
 
     // cannot finish before poll ends
     if env.block.time < Timestamp::from_seconds(config.bet_end_time) {
-        return Err(StdError::generic_err(
-            "bet is live now, The poll cannot be finished before the bet ends",
-        ));
+        return Err(ContractError::FinishBeforeEndTime {});
     }
 
     let winner_amount = match SIDE_TOTAL_AMOUNT.may_load(deps.storage, &winner.to_be_bytes())? {
@@ -151,8 +146,6 @@ pub fn try_finish_poll(
     };
 
     let odds = Decimal::from_ratio(state.total_amount, winner_amount);
-    // println!("{}", winner_amount);
-    // println!("{}", odds);
 
     // iterate over them all
     let all: StdResult<Vec<_>> = BETS
@@ -160,7 +153,6 @@ pub fn try_finish_poll(
         .range(deps.storage, None, None, Order::Ascending)
         .map(|item| {
             let (addr, reward) = item?;
-            // println!("{}", str::from_utf8(&addr)?);
             Ok((addr, reward))
         })
         .collect();
@@ -173,7 +165,6 @@ pub fn try_finish_poll(
                 Ok(((*reward) * odds) * (Decimal::percent(99_u64))) // 1% fee
             },
         )?;
-        // println!("{}", ((*reward) * odds) * (Decimal::percent(99 as u64)) );
     }
 
     // Save the new state
@@ -203,7 +194,7 @@ pub fn try_finish_poll(
         })))
 }
 
-pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
+pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
     let config = read_config(deps.storage)?;
     let mut state = read_state(deps.storage)?;
 
@@ -211,14 +202,12 @@ pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> StdResult<Response> 
 
     // only contract's owner can revert
     if info.sender != config.owner {
-        return Err(StdError::generic_err(
-            "only the original owner can revert poll",
-        ));
+        return Err(ContractError::Unauthorized {});
     }
 
     // already reverted
     if state.status == BetStatus::Closed {
-        return Err(StdError::generic_err("already reverted poll"));
+        return Err(ContractError::AlreadyReverted {});
     }
 
     let mut msgs: Vec<CosmosMsg> = vec![];
@@ -228,7 +217,6 @@ pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> StdResult<Response> 
         .range(deps.storage, None, None, Order::Ascending)
         .map(|item| {
             let (addr, spent) = item?;
-            // println!("{}", str::from_utf8(&addr)?);
             msgs.push(CosmosMsg::Bank(BankMsg::Send {
                 to_address: str::from_utf8(&addr)?.to_string(),
                 amount: vec![Coin {
@@ -256,15 +244,12 @@ pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> StdResult<Response> 
         .add_messages(msgs))
 }
 
-pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
+pub fn try_claim(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
     let addr = info.sender;
     let state = read_state(deps.storage)?;
 
     if state.status != BetStatus::Reward {
-        return Err(StdError::generic_err(format!(
-            "cannot claim rewards. current status: {}",
-            state.status
-        )));
+        return Err(ContractError::CannotClaimRewards(state.status));
     }
 
     // REWARDS State load
@@ -274,7 +259,7 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
     };
 
     if value == Uint128::zero() {
-        return Err(StdError::generic_err("there's no rewards to claim"));
+        return Err(ContractError::EmptyRewards {});
     }
 
     REWARDS.remove(deps.storage, &addr);
@@ -290,15 +275,18 @@ pub fn try_claim(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
         })))
 }
 
-pub fn try_reclaim_deposit(deps: DepsMut) -> StdResult<Response> {
+pub fn try_reclaim_deposit(deps: DepsMut) -> Result<Response, ContractError> {
     let config = read_config(deps.storage)?;
     let mut state = read_state(deps.storage)?;
     if state.deposit_reclaimed {
-        return Err(StdError::generic_err("Already reclaimed".to_string()));
+        return Err(ContractError::AlreadyReclaimed {});
     }
 
     if state.total_amount < config.reclaimable_threshold {
-        return Err(StdError::generic_err("Not enough total amount".to_string()));
+        return Err(ContractError::NotEnoughTotalAmount(
+            state.total_amount,
+            config.reclaimable_threshold,
+        ));
     }
 
     state.deposit_reclaimed = true;
@@ -323,19 +311,15 @@ pub fn try_reset_poll(
     info: MessageInfo,
     _poll_name: String,
     _bet_end_time: u64,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let config = read_config(deps.storage)?;
     let mut state = read_state(deps.storage)?;
     if info.sender != config.owner {
-        return Err(StdError::generic_err(
-            "only the original owner can reset the poll",
-        ));
+        return Err(ContractError::Unauthorized {});
     }
     let bet_status = state.status.clone();
     if bet_status != BetStatus::Reward && bet_status != BetStatus::Closed {
-        return Err(StdError::generic_err(
-            "You can't reset the poll until the poll ends",
-        ));
+        return Err(ContractError::ResetBeforeClosed {});
     }
 
     // To return all the rewards
@@ -394,12 +378,10 @@ pub fn try_transfer_owner(
     deps: DepsMut,
     info: MessageInfo,
     new_owner: String,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let mut config = read_config(deps.storage)?;
     if info.sender != config.owner {
-        return Err(StdError::generic_err(
-            "only the original owner can transfer the ownership",
-        ));
+        return Err(ContractError::Unauthorized {});
     }
     config.owner = deps.api.addr_validate(&new_owner)?;
     store_config(deps.storage, &config)?;
@@ -411,12 +393,10 @@ pub fn try_set_minimun_bet_amount(
     deps: DepsMut,
     info: MessageInfo,
     amount: u128,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let mut config = read_config(deps.storage)?;
     if info.sender != config.owner {
-        return Err(StdError::generic_err(
-            "only the original owner can set the minimum bet amount",
-        ));
+        return Err(ContractError::Unauthorized {});
     }
     config.minimum_bet_amount = Uint128::from(amount);
     store_config(deps.storage, &config)?;

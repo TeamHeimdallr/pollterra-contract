@@ -1,6 +1,7 @@
+use crate::error::ContractError;
 use cosmwasm_std::{
-    to_binary, CosmosMsg, DepsMut, Env, MessageInfo, Order, Response, StdError, StdResult,
-    Timestamp, Uint128, WasmMsg,
+    to_binary, CosmosMsg, DepsMut, Env, MessageInfo, Order, Response, StdResult, Timestamp,
+    Uint128, WasmMsg,
 };
 use cw20::Cw20ExecuteMsg;
 use std::cmp::Ordering;
@@ -8,27 +9,32 @@ use std::convert::TryInto;
 
 use crate::state::{read_config, read_state, store_config, store_state, BetStatus, SIDES, VOTES};
 
-pub fn vote(deps: DepsMut, env: Env, info: MessageInfo, side: u64) -> StdResult<Response> {
+pub fn vote(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    side: u64,
+) -> Result<Response, ContractError> {
     let config = read_config(deps.storage)?;
 
     // current block time is less than start time or larger than bet end time
     if env.block.time >= Timestamp::from_seconds(config.bet_end_time) {
-        return Err(StdError::generic_err(format!(
-            "Bet is not live. current block time: {}, bet end time: {}",
-            env.block.time, config.bet_end_time
-        )));
+        return Err(ContractError::VoteIsNotLive(
+            env.block.time,
+            config.bet_end_time,
+        ));
     }
 
     // Check if already participated
     if VOTES.has(deps.storage, &info.sender) {
-        return Err(StdError::generic_err("already participated"));
+        return Err(ContractError::AlreadyParticipated {});
     }
 
     // TODO : participation requirements
 
     // Check if some funds are sent
     if !info.funds.is_empty() {
-        return Err(StdError::generic_err("you'd better not send ust"));
+        return Err(ContractError::NotEmptyFunds {});
     }
 
     SIDES.update(
@@ -61,27 +67,23 @@ pub fn vote(deps: DepsMut, env: Env, info: MessageInfo, side: u64) -> StdResult<
     ]))
 }
 
-pub fn finish_poll(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
+pub fn finish_poll(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     let config = read_config(deps.storage)?;
     let mut state = read_state(deps.storage)?;
 
     // only contract's owner can finish poll
     if info.sender != config.owner {
-        return Err(StdError::generic_err(
-            "only the original owner can finish poll",
-        ));
+        return Err(ContractError::Unauthorized {});
     }
 
     // already finished
     if state.status != BetStatus::Voting {
-        return Err(StdError::generic_err("already finished poll"));
+        return Err(ContractError::AlreadyFinishedPoll {});
     }
 
     // cannot finish before poll ends
     if env.block.time < Timestamp::from_seconds(config.bet_end_time) {
-        return Err(StdError::generic_err(
-            "Vote is live now, The poll cannot be finished before the end time",
-        ));
+        return Err(ContractError::FinishBeforeEndTime {});
     }
 
     let mut winning_sides: Vec<u64> = Vec::new();
@@ -130,15 +132,18 @@ pub fn finish_poll(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Resp
         })))
 }
 
-pub fn reclaim_deposit(deps: DepsMut) -> StdResult<Response> {
+pub fn reclaim_deposit(deps: DepsMut) -> Result<Response, ContractError> {
     let config = read_config(deps.storage)?;
     let mut state = read_state(deps.storage)?;
     if state.deposit_reclaimed {
-        return Err(StdError::generic_err("Already reclaimed".to_string()));
+        return Err(ContractError::AlreadyReclaimed {});
     }
 
     if state.total_amount < config.reclaimable_threshold {
-        return Err(StdError::generic_err("Not enough total amount".to_string()));
+        return Err(ContractError::NotEnoughTotalAmount(
+            state.total_amount,
+            config.reclaimable_threshold,
+        ));
     }
 
     state.deposit_reclaimed = true;
@@ -157,12 +162,14 @@ pub fn reclaim_deposit(deps: DepsMut) -> StdResult<Response> {
 }
 
 // TODO : create update_config function
-pub fn transfer_owner(deps: DepsMut, info: MessageInfo, new_owner: String) -> StdResult<Response> {
+pub fn transfer_owner(
+    deps: DepsMut,
+    info: MessageInfo,
+    new_owner: String,
+) -> Result<Response, ContractError> {
     let mut config = read_config(deps.storage)?;
     if info.sender != config.owner {
-        return Err(StdError::generic_err(
-            "only the original owner can transfer the ownership",
-        ));
+        return Err(ContractError::Unauthorized {});
     }
     config.owner = deps.api.addr_validate(&new_owner)?;
     store_config(deps.storage, &config)?;
