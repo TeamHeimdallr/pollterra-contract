@@ -6,8 +6,8 @@ mod meta_contract_tests {
     use config::config::PollType;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
     use cosmwasm_std::{
-        attr, to_binary, Binary, ContractResult, CosmosMsg, Decimal, Event, Reply, SubMsg,
-        SubMsgExecutionResponse, Uint128, WasmMsg,
+        attr, to_binary, Binary, ContractResult, CosmosMsg, Decimal, Event, Reply, StdError,
+        SubMsg, SubMsgExecutionResponse, Uint128, WasmMsg,
     };
     use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
     use protobuf::Message;
@@ -167,40 +167,42 @@ mod meta_contract_tests {
         assert_eq!(res.messages, vec![submsg]);
     }
 
-    // #[test]
-    // fn fail_poll_init_with_wrong_poll_type() {
-    //     let mut deps = mock_dependencies(&[]);
+    #[test]
+    fn fail_poll_init_with_wrong_poll_type() {
+        let mut deps = mock_dependencies(&[]);
 
-    //     let msg = InstantiateMsg {};
-    //     let info = mock_info("creator", &[]);
-    //     let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+        let msg = InstantiateMsg {};
+        let info = mock_info("creator", &[]);
+        let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-    //     let msg = ExecuteMsg::RegisterTokenContract {
-    //         token_contract: TOKEN_CONTRACT.to_string(),
-    //         creation_deposit: DEPOSIT_AMOUNT,
-    //     };
-    //     let info = mock_info("creator", &[]);
-    //     let _res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+        let msg = ExecuteMsg::RegisterTokenContract {
+            token_contract: TOKEN_CONTRACT.to_string(),
+            creation_deposit: DEPOSIT_AMOUNT,
+        };
+        let info = mock_info("creator", &[]);
+        let _res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-    //     let info = mock_info(TOKEN_CONTRACT, &[]);
-    //     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
-    //         sender: TOKEN_CONTRACT.to_string(),
-    //         amount: Uint128::from(1_000u128),
-    //         msg: to_binary(&Cw20HookMsg::InitPoll {
-    //             code_id: TEST_CODE_ID,
-    //             poll_name: "test_poll".to_string(),
-    //             poll_type: "Wrong Poll Type".to_string(),
-    //             bet_end_time: 1653673600,
-    //             resolution_time: 1653673600,
-    //         })
-    //         .unwrap(),
-    //     });
-    //     // let res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+        let info = mock_info(TOKEN_CONTRACT, &[]);
+        let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+            sender: TOKEN_CONTRACT.to_string(),
+            amount: Uint128::from(1_000u128),
+            msg: to_binary(&Cw20HookMsg::InitPoll {
+                code_id: TEST_CODE_ID,
+                poll_name: "test_poll".to_string(),
+                poll_type: "Wrong Poll Type".to_string(),
+                bet_end_time: 1653673600,
+                resolution_time: 1653673600,
+            })
+            .unwrap(),
+        });
 
-    //     match entrypoints::execute(deps.as_mut(), mock_env(), info, msg) {
-    //         Ok(_) => panic!("Must return error"),
-    //         Err(ContractError::InvalidPollType {}) => (),
-    //         Err(_) => panic!("Unknown error"),
-    //     };
-    // }
+        let err_msg = match entrypoints::execute(deps.as_mut(), mock_env(), info, msg) {
+            Ok(_) => panic!("Must return error"),
+            Err(v) => (v),
+        };
+        assert_eq!(
+            err_msg,
+            StdError::generic_err("poll type should be one of (prediction | opinion)")
+        );
+    }
 }
