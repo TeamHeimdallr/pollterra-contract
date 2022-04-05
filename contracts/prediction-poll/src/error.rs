@@ -17,9 +17,6 @@ pub enum ContractError {
     #[error("Bet is not live. current block time: {0}, bet end time: {1}")]
     BetIsNotLive(Timestamp, u64),
 
-    #[error("Already participated")]
-    AlreadyParticipated {},
-
     #[error("You need to send some ust in order to bet")]
     EmptyFunds {},
 

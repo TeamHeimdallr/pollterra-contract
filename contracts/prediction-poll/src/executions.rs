@@ -42,7 +42,7 @@ pub fn try_bet(
             if info.funds[0].denom == DENOM {
                 Ok(info.funds[0].amount)
             } else {
-                Err(ContractError::EmptyFunds {})
+                Err(ContractError::OnlyUstAvailable {})
             }
         }
         _ => Err(ContractError::OnlyUstAvailable {}),
