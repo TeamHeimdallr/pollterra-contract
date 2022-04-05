@@ -35,7 +35,6 @@ pub enum QueryMsg {
 
 pub type ConfigResponse = State;
 
-// TODO : Do I need to show the info of each contract with the addrs ?
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ContractsResponse {
     pub contracts: Vec<Addr>,

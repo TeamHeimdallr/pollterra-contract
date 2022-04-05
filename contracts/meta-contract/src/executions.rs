@@ -1,4 +1,5 @@
 use crate::state::{read_config, store_config, Config, Cw20HookMsg};
+use config::config::PollType;
 use cosmwasm_std::{
     from_binary, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError,
     StdResult, SubMsg, Uint128, WasmMsg,
@@ -30,6 +31,7 @@ pub fn receive_cw20(
         Ok(Cw20HookMsg::InitPoll {
             code_id,
             poll_name,
+            poll_type,
             bet_end_time,
             resolution_time,
         }) => init_poll(
@@ -39,6 +41,7 @@ pub fn receive_cw20(
             cw20_msg.sender,
             cw20_msg.amount,
             poll_name,
+            poll_type,
             bet_end_time,
             resolution_time,
         ),
@@ -54,6 +57,7 @@ pub fn init_poll(
     generator: String,
     deposit_amount: Uint128,
     poll_name: String,
+    poll_type: String,
     bet_end_time: u64,
     resolution_time: u64,
 ) -> StdResult<Response> {
@@ -67,6 +71,14 @@ pub fn init_poll(
         )));
     }
 
+    let poll_type = match poll_type.as_str() {
+        "prediction" => Ok(PollType::Prediction),
+        "opinion" => Ok(PollType::Opinion),
+        _ => Err(StdError::generic_err(
+            "poll type should be one of (prediction | opinion)",
+        )),
+    };
+
     let msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Instantiate {
         admin: Some(contract_owner.to_string()),
         code_id,
@@ -76,6 +88,7 @@ pub fn init_poll(
             deposit_amount,
             reclaimable_threshold: config.reclaimable_threshold,
             poll_name: poll_name.clone(),
+            poll_type: poll_type?,
             bet_end_time,
             resolution_time,
             minimum_bet_amount: Some(config.minimum_bet_amount),
