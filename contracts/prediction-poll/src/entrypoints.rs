@@ -56,7 +56,7 @@ pub fn execute(
     _env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Bet { side } => executions::try_bet(deps, _env, info, side),
         ExecuteMsg::FinishPoll { winner } => executions::try_finish_poll(deps, _env, info, winner),

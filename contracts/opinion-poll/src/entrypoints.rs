@@ -57,7 +57,7 @@ pub fn execute(
     _env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Vote { side } => executions::vote(deps, _env, info, side),
         ExecuteMsg::FinishPoll {} => executions::finish_poll(deps, _env, info),

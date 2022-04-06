@@ -1,13 +1,15 @@
+use crate::error::ContractError;
 use cosmwasm_std::{
-    to_binary, CosmosMsg, DepsMut, Event, Reply, Response, StdError, StdResult, Uint128, WasmMsg,
+    to_binary, CosmosMsg, DepsMut, Event, Reply, Response, StdError, Uint128, WasmMsg,
 };
+
 use cw20::Cw20ExecuteMsg;
 use protobuf::Message;
 
 use crate::response::MsgInstantiateContractResponse;
 use crate::state::{read_config, read_state, store_state, Config, State, CONTRACTS};
 
-pub fn after_poll_init(deps: DepsMut, msg: Reply) -> StdResult<Response> {
+pub fn after_poll_init(deps: DepsMut, msg: Reply) -> Result<Response, ContractError> {
     let reply_result = msg.result.unwrap();
     let data = reply_result.data.unwrap();
     let res: MsgInstantiateContractResponse =
@@ -36,7 +38,7 @@ pub fn after_poll_init(deps: DepsMut, msg: Reply) -> StdResult<Response> {
     }
 
     if deposit_amount.is_none() {
-        panic!(""); // TODO error message
+        return Err(ContractError::InsufficientBalance {});
     }
     let deposit_amount = Uint128::from(deposit_amount.unwrap().parse::<u128>().unwrap());
 

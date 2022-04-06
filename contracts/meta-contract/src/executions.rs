@@ -1,9 +1,11 @@
+use crate::error::ContractError;
 use crate::state::{read_config, store_config, Config, Cw20HookMsg};
 use config::config::PollType;
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError,
-    StdResult, SubMsg, Uint128, WasmMsg,
+    from_binary, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, SubMsg, Uint128,
+    WasmMsg,
 };
+
 use cw20::Cw20ReceiveMsg;
 
 use messages::msg::PollInstantiateMsg;
@@ -16,15 +18,15 @@ pub fn receive_cw20(
     _env: Env,
     info: MessageInfo,
     cw20_msg: Cw20ReceiveMsg,
-) -> Result<Response, StdError> {
+) -> Result<Response, ContractError> {
     let config: Config = read_config(deps.storage).unwrap();
     if config.token_contract != deps.api.addr_validate(info.sender.as_str())? {
-        return Err(StdError::generic_err("Incorrect token contract"));
+        return Err(ContractError::IncorrectTokenContract {});
     }
 
     let creation_deposit: Uint128 = config.creation_deposit;
     if creation_deposit > cw20_msg.amount {
-        return Err(StdError::generic_err("Insufficient token amount"));
+        return Err(ContractError::InsufficientTokenDeposit(creation_deposit));
     }
 
     match from_binary(&cw20_msg.msg) {
@@ -45,7 +47,7 @@ pub fn receive_cw20(
             bet_end_time,
             resolution_time,
         ),
-        _ => Err(StdError::generic_err("Cw20Msg doesn't match")),
+        _ => Err(ContractError::InvalidCw20Msg {}),
     }
 }
 
@@ -60,23 +62,20 @@ pub fn init_poll(
     poll_type: String,
     bet_end_time: u64,
     resolution_time: u64,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let config: Config = read_config(deps.storage).unwrap();
     let contract_owner: Addr = config.owner;
 
     if config.creation_deposit != deposit_amount {
-        return Err(StdError::generic_err(format!(
-            "deposit amount should be {}",
-            config.creation_deposit
-        )));
+        return Err(ContractError::InsufficientTokenDeposit(
+            config.creation_deposit,
+        ));
     }
 
     let poll_type = match poll_type.as_str() {
         "prediction" => Ok(PollType::Prediction),
         "opinion" => Ok(PollType::Opinion),
-        _ => Err(StdError::generic_err(
-            "poll type should be one of (prediction | opinion)",
-        )),
+        _ => Err(ContractError::InvalidPollType {}),
     };
 
     let msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Instantiate {
@@ -110,16 +109,14 @@ pub fn register_token_contract(
     info: MessageInfo,
     token_contract: String,
     creation_deposit: Uint128,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let mut config: Config = read_config(deps.storage).unwrap();
     if !String::new().eq(&config.token_contract) {
-        return Err(StdError::generic_err("already registered"));
+        return Err(ContractError::TokenAlreadyRegistered {});
     }
 
     if info.sender != config.owner {
-        return Err(StdError::generic_err(
-            "only the original owner can register a token contract",
-        ));
+        return Err(ContractError::Unauthorized {});
     }
 
     config.token_contract = deps.api.addr_validate(&token_contract)?.to_string();
@@ -134,16 +131,14 @@ pub fn update_creation_deposit(
     deps: DepsMut,
     info: MessageInfo,
     creation_deposit: Uint128,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let mut config: Config = read_config(deps.storage).unwrap();
     if String::new().eq(&config.token_contract) {
-        return Err(StdError::generic_err("token not registered"));
+        return Err(ContractError::TokenNotRegistered {});
     }
 
     if info.sender != config.owner {
-        return Err(StdError::generic_err(
-            "only the original owner can update creation deposit amount",
-        ));
+        return Err(ContractError::Unauthorized {});
     }
 
     config.creation_deposit = creation_deposit;
@@ -156,13 +151,11 @@ pub fn update_reclaimable_threshold(
     deps: DepsMut,
     info: MessageInfo,
     reclaimable_threshold: Uint128,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let mut config: Config = read_config(deps.storage).unwrap();
 
     if info.sender != config.owner {
-        return Err(StdError::generic_err(
-            "only the original owner can update reclaimable threshold amount",
-        ));
+        return Err(ContractError::Unauthorized {});
     }
 
     config.reclaimable_threshold = reclaimable_threshold;
@@ -175,12 +168,10 @@ pub fn try_transfer_owner(
     deps: DepsMut,
     info: MessageInfo,
     new_owner: String,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let mut config = read_config(deps.storage)?;
     if info.sender != config.owner {
-        return Err(StdError::generic_err(
-            "only the original owner can transfer the ownership",
-        ));
+        return Err(ContractError::Unauthorized {});
     }
     config.owner = deps.api.addr_validate(&new_owner)?;
     store_config(deps.storage, &config)?;

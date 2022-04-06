@@ -1,4 +1,4 @@
-use cosmwasm_std::StdError;
+use cosmwasm_std::{StdError, Uint128};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -9,7 +9,28 @@ pub enum ContractError {
     #[error("Unauthorized")]
     Unauthorized {},
 
-    #[error("poll type should be one of (prediction | opinion)")]
+    #[error("Invalid reply id")]
+    InvalidReplyId {},
+
+    #[error("Incorrect token contract")]
+    IncorrectTokenContract {},
+
+    #[error("Must deposit more than {0} token")]
+    InsufficientTokenDeposit(Uint128),
+
+    #[error("Insufficient balance")]
+    InsufficientBalance {},
+
+    #[error("Cw20Msg doesn't match")]
+    InvalidCw20Msg {},
+
+    #[error("Token contract is already registered")]
+    TokenAlreadyRegistered {},
+
+    #[error("Token contract is not registered")]
+    TokenNotRegistered {},
+
+    #[error("Poll type should be one of (prediction | opinion)")]
     InvalidPollType {},
     // Add any other custom errors you like here.
     // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
