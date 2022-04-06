@@ -59,15 +59,17 @@ pub fn execute(
             token_contract,
             creation_deposit,
         } => executions::register_token_contract(deps, info, token_contract, creation_deposit),
-        ExecuteMsg::UpdateCreationDeposit { creation_deposit } => {
-            executions::update_creation_deposit(deps, info, creation_deposit)
-        }
-        ExecuteMsg::UpdateReclaimableThreshold {
+        ExecuteMsg::UpdateConfig {
+            creation_deposit,
             reclaimable_threshold,
-        } => executions::update_reclaimable_threshold(deps, info, reclaimable_threshold),
-        ExecuteMsg::TransferOwner { new_owner } => {
-            executions::try_transfer_owner(deps, info, new_owner)
-        }
+            new_owner,
+        } => executions::update_config(
+            deps,
+            info,
+            creation_deposit,
+            reclaimable_threshold,
+            new_owner,
+        ),
     }
 }
 
@@ -83,6 +85,7 @@ pub fn reply(deps: DepsMut, _env: Env, msg: Reply) -> Result<Response, ContractE
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
+        QueryMsg::State {} => to_binary(&queries::query_state(deps)?),
         QueryMsg::GetContracts {} => to_binary(&queries::query_contracts(deps)?),
     }
 }
