@@ -126,31 +126,12 @@ pub fn register_token_contract(
     Ok(Response::new().add_attribute("method", "register_token_contract"))
 }
 
-// TODO : update config at once
-pub fn update_creation_deposit(
+pub fn update_config(
     deps: DepsMut,
     info: MessageInfo,
-    creation_deposit: Uint128,
-) -> Result<Response, ContractError> {
-    let mut config: Config = read_config(deps.storage).unwrap();
-    if String::new().eq(&config.token_contract) {
-        return Err(ContractError::TokenNotRegistered {});
-    }
-
-    if info.sender != config.owner {
-        return Err(ContractError::Unauthorized {});
-    }
-
-    config.creation_deposit = creation_deposit;
-    store_config(deps.storage, &config)?;
-
-    Ok(Response::new().add_attribute("method", "update_creatoin_deposit"))
-}
-
-pub fn update_reclaimable_threshold(
-    deps: DepsMut,
-    info: MessageInfo,
-    reclaimable_threshold: Uint128,
+    creation_deposit: Option<Uint128>,
+    reclaimable_threshold: Option<Uint128>,
+    new_owner: Option<String>,
 ) -> Result<Response, ContractError> {
     let mut config: Config = read_config(deps.storage).unwrap();
 
@@ -158,23 +139,22 @@ pub fn update_reclaimable_threshold(
         return Err(ContractError::Unauthorized {});
     }
 
-    config.reclaimable_threshold = reclaimable_threshold;
-    store_config(deps.storage, &config)?;
-
-    Ok(Response::new().add_attribute("method", "update_reclaimable_threshold"))
-}
-
-pub fn try_transfer_owner(
-    deps: DepsMut,
-    info: MessageInfo,
-    new_owner: String,
-) -> Result<Response, ContractError> {
-    let mut config = read_config(deps.storage)?;
-    if info.sender != config.owner {
-        return Err(ContractError::Unauthorized {});
+    if let Some(creation_deposit) = creation_deposit {
+        if String::new().eq(&config.token_contract) {
+            return Err(ContractError::TokenNotRegistered {});
+        }
+        config.creation_deposit = creation_deposit;
     }
-    config.owner = deps.api.addr_validate(&new_owner)?;
+
+    if let Some(reclaimable_threshold) = reclaimable_threshold {
+        config.reclaimable_threshold = reclaimable_threshold;
+    }
+
+    if let Some(new_owner) = new_owner {
+        config.owner = deps.api.addr_validate(&new_owner)?;
+    }
+
     store_config(deps.storage, &config)?;
 
-    Ok(Response::new().add_attribute("method", "try_transfer_owner"))
+    Ok(Response::new().add_attribute("method", "update_config"))
 }
