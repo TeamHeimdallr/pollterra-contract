@@ -195,7 +195,7 @@ pub fn transfer(
     let remain_amount = contract_balance.amount - amount;
 
     let transfer_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
-        to_address: recipient.to_string(),
+        to_address: deps.api.addr_validate(recipient.as_str())?.to_string(),
         amount: vec![Coin {
             denom: DENOM.to_string(),
             amount,
