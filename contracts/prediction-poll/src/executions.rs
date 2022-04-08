@@ -145,26 +145,28 @@ pub fn try_finish_poll(
         None => Uint128::new(0),
     };
 
-    let odds = Decimal::from_ratio(state.total_amount, winner_amount);
+    if !winner_amount.is_zero() {
+        let odds = Decimal::from_ratio(state.total_amount, winner_amount);
 
-    // iterate over them all
-    let all: StdResult<Vec<_>> = BETS
-        .prefix(&winner.to_be_bytes())
-        .range(deps.storage, None, None, Order::Ascending)
-        .map(|item| {
-            let (addr, reward) = item?;
-            Ok((addr, reward))
-        })
-        .collect();
+        // iterate over them all
+        let all: StdResult<Vec<_>> = BETS
+            .prefix(&winner.to_be_bytes())
+            .range(deps.storage, None, None, Order::Ascending)
+            .map(|item| {
+                let (addr, reward) = item?;
+                Ok((addr, reward))
+            })
+            .collect();
 
-    for (addr, reward) in all?.iter() {
-        REWARDS.update(
-            deps.storage,
-            &deps.api.addr_validate(str::from_utf8(addr)?)?,
-            |_exists| -> StdResult<Uint128> {
-                Ok(((*reward) * odds) * (Decimal::percent(99_u64))) // 1% fee
-            },
-        )?;
+        for (addr, reward) in all?.iter() {
+            REWARDS.update(
+                deps.storage,
+                &deps.api.addr_validate(str::from_utf8(addr)?)?,
+                |_exists| -> StdResult<Uint128> {
+                    Ok(((*reward) * odds) * (Decimal::percent(99_u64))) // 1% fee
+                },
+            )?;
+        }
     }
 
     // Save the new state
