@@ -52,16 +52,24 @@ pub fn instantiate(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Receive(msg) => executions::receive_cw20(deps, _env, info, msg),
+        ExecuteMsg::Receive(msg) => executions::receive_cw20(deps, env, info, msg),
         ExecuteMsg::RegisterTokenContract {
             token_contract,
             creation_deposit,
         } => executions::register_token_contract(deps, info, token_contract, creation_deposit),
+        ExecuteMsg::FinishPoll {
+            poll_contract,
+            poll_type,
+            winner,
+        } => executions::finish_poll(deps, info, poll_contract, poll_type, winner),
+        ExecuteMsg::Transfer { recipient, amount } => {
+            executions::transfer(deps, env, info, recipient, amount)
+        }
         ExecuteMsg::UpdateConfig {
             creation_deposit,
             reclaimable_threshold,

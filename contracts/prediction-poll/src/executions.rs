@@ -145,27 +145,45 @@ pub fn try_finish_poll(
         None => Uint128::new(0),
     };
 
-    let odds = Decimal::from_ratio(state.total_amount, winner_amount);
+    let mut remain_amount = state.total_amount;
 
-    // iterate over them all
-    let all: StdResult<Vec<_>> = BETS
-        .prefix(&winner.to_be_bytes())
-        .range(deps.storage, None, None, Order::Ascending)
-        .map(|item| {
-            let (addr, reward) = item?;
-            Ok((addr, reward))
-        })
-        .collect();
+    if !winner_amount.is_zero() {
+        let odds = Decimal::from_ratio(state.total_amount, winner_amount);
 
-    for (addr, reward) in all?.iter() {
-        REWARDS.update(
-            deps.storage,
-            &deps.api.addr_validate(str::from_utf8(addr)?)?,
-            |_exists| -> StdResult<Uint128> {
-                Ok(((*reward) * odds) * (Decimal::percent(99_u64))) // 1% fee
-            },
-        )?;
+        // iterate over them all
+        let all: StdResult<Vec<_>> = BETS
+            .prefix(&winner.to_be_bytes())
+            .range(deps.storage, None, None, Order::Ascending)
+            .map(|item| {
+                let (addr, reward) = item?;
+                Ok((addr, reward))
+            })
+            .collect();
+
+        let mut total_rewards = Uint128::zero();
+        for (addr, reward) in all?.iter() {
+            REWARDS.update(
+                deps.storage,
+                &deps.api.addr_validate(str::from_utf8(addr)?)?,
+                |_exists| -> StdResult<Uint128> {
+                    let reward =
+                        ((*reward) * odds) * (Decimal::percent(100_u64) - config.tax_percentage); // fee
+                    total_rewards += reward;
+                    Ok(reward)
+                },
+            )?;
+        }
+        remain_amount -= total_rewards;
     }
+
+    // transfer remain amount to contract owner
+    let transfer_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
+        to_address: config.owner.to_string(),
+        amount: vec![Coin {
+            denom: DENOM.to_string(),
+            amount: remain_amount,
+        }],
+    });
 
     // Save the new state
     state.status = BetStatus::Reward;
@@ -181,6 +199,7 @@ pub fn try_finish_poll(
             amount: state.deposit_amount,
         };
     }
+
     state.deposit_reclaimed = true;
     store_state(deps.storage, &state)?;
 
@@ -191,7 +210,8 @@ pub fn try_finish_poll(
             contract_addr: config.token_contract,
             msg: to_binary(&cw20_msg)?,
             funds: vec![],
-        })))
+        }))
+        .add_message(transfer_msg))
 }
 
 pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {

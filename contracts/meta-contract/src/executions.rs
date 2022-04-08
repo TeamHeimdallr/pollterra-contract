@@ -1,10 +1,10 @@
 use crate::error::ContractError;
-use crate::msg::Cw20HookMsg;
+use crate::msg::{Cw20HookMsg, OpinionPollExecuteMsg, PredictionPollExecuteMsg};
 use crate::state::Config;
 use config::config::PollType;
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult,
-    SubMsg, Uint128, WasmMsg,
+    from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Response,
+    StdResult, SubMsg, Uint128, WasmMsg,
 };
 
 use cw20::Cw20ReceiveMsg;
@@ -13,6 +13,7 @@ use messages::msg::PollInstantiateMsg;
 
 // reply_id is only one for now
 pub const INSTANTIATE_REPLY_ID: u64 = 1;
+const DENOM: &str = "uusd";
 
 pub fn receive_cw20(
     deps: DepsMut,
@@ -71,9 +72,7 @@ pub fn init_poll(
     let config = Config::load(deps.storage)?;
 
     if config.creation_deposit != deposit_amount {
-        return Err(ContractError::InsufficientTokenDeposit(
-            config.creation_deposit,
-        ));
+        return Err(ContractError::InvalidTokenDeposit(config.creation_deposit));
     }
 
     let poll_type = match poll_type.as_str() {
@@ -129,6 +128,87 @@ pub fn register_token_contract(
     config.save(deps.storage)?;
 
     Ok(Response::new().add_attribute("method", "register_token_contract"))
+}
+
+pub fn finish_poll(
+    deps: DepsMut,
+    info: MessageInfo,
+    poll_contract: String,
+    poll_type: String,
+    winner: Option<u64>,
+) -> Result<Response, ContractError> {
+    let config = Config::load(deps.storage)?;
+
+    if !config.is_admin(&info.sender) {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    let poll_type = match poll_type.as_str() {
+        "prediction" => Ok(PollType::Prediction),
+        "opinion" => Ok(PollType::Opinion),
+        _ => Err(ContractError::InvalidPollType {}),
+    }?;
+
+    if poll_type == PollType::Prediction && winner.is_none() {
+        return Err(ContractError::EmptyWinner {});
+    }
+
+    let message: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Execute {
+        contract_addr: poll_contract,
+        msg: match poll_type {
+            PollType::Prediction => to_binary(&PredictionPollExecuteMsg::FinishPoll {
+                winner: winner.unwrap(),
+            })?,
+            PollType::Opinion => to_binary(&OpinionPollExecuteMsg::FinishPoll {})?,
+        },
+        funds: vec![],
+    });
+
+    Ok(Response::new()
+        .add_message(message)
+        .add_attribute("method", "finish_poll"))
+}
+
+pub fn transfer(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    recipient: String,
+    amount: Uint128,
+) -> Result<Response, ContractError> {
+    let config = Config::load(deps.storage)?;
+
+    if !config.is_admin(&info.sender) {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    if amount.is_zero() {
+        return Err(ContractError::InvalidZeroAmount {});
+    }
+
+    let contract_balance = deps.querier.query_balance(&env.contract.address, DENOM)?;
+
+    if contract_balance.amount < amount {
+        return Err(ContractError::InsufficientBalance {});
+    }
+
+    let remain_amount = contract_balance.amount - amount;
+
+    let transfer_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
+        to_address: deps.api.addr_validate(recipient.as_str())?.to_string(),
+        amount: vec![Coin {
+            denom: DENOM.to_string(),
+            amount,
+        }],
+    });
+
+    Ok(Response::new()
+        .add_attribute("method", "transfer")
+        .add_attribute("requester", info.sender.as_str())
+        .add_attribute("recipient", recipient)
+        .add_attribute("amount", amount)
+        .add_attribute("remain_amount", remain_amount)
+        .add_message(transfer_msg))
 }
 
 pub fn update_config(

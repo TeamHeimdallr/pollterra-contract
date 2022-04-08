@@ -41,6 +41,62 @@
     {
       "type": "object",
       "required": [
+        "finish_poll"
+      ],
+      "properties": {
+        "finish_poll": {
+          "type": "object",
+          "required": [
+            "poll_contract",
+            "poll_type"
+          ],
+          "properties": {
+            "poll_contract": {
+              "type": "string"
+            },
+            "poll_type": {
+              "type": "string"
+            },
+            "winner": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "transfer"
+      ],
+      "properties": {
+        "transfer": {
+          "type": "object",
+          "required": [
+            "amount",
+            "recipient"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "recipient": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "update_config"
       ],
       "properties": {
