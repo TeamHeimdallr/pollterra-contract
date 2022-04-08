@@ -1,6 +1,6 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult,
+    to_binary, Addr, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult,
     Uint128,
 };
 use cw2::set_contract_version;
@@ -9,7 +9,7 @@ use std::str;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{store_config, store_state, Config, State};
+use crate::state::{Config, State};
 use crate::{executions, queries, replies};
 
 // version info for migration info
@@ -26,20 +26,30 @@ pub fn instantiate(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
-    _msg: InstantiateMsg,
+    msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let config = Config {
+    Config {
         owner: info.sender.clone(),
+        admins: match msg.admins {
+            Some(admin_list) => Some(
+                admin_list
+                    .iter()
+                    .map(|v| deps.api.addr_validate(v))
+                    .collect::<StdResult<Vec<Addr>>>()?,
+            ),
+            None => None,
+        },
         token_contract: String::new(),
         creation_deposit: Uint128::zero(),
         reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
         minimum_bet_amount: Uint128::from(1_000u128),
         tax_percentage: Decimal::percent(5),
-    };
-    let state = State { num_contract: 0 };
+    }
+    .save(deps.storage)?;
+
+    State { num_contract: 0 }.save(deps.storage)?;
+
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-    store_config(deps.storage, &config)?;
-    store_state(deps.storage, &state)?;
 
     Ok(Response::new()
         .add_attribute("method", "instantiate")
@@ -63,12 +73,14 @@ pub fn execute(
             creation_deposit,
             reclaimable_threshold,
             new_owner,
+            new_admins,
         } => executions::update_config(
             deps,
             info,
             creation_deposit,
             reclaimable_threshold,
             new_owner,
+            new_admins,
         ),
     }
 }

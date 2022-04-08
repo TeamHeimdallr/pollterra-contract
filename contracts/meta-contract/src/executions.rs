@@ -1,9 +1,9 @@
 use crate::error::ContractError;
-use crate::state::{read_config, store_config, Config, Cw20HookMsg};
+use crate::state::{Config, Cw20HookMsg};
 use config::config::PollType;
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, SubMsg, Uint128,
-    WasmMsg,
+    from_binary, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult,
+    SubMsg, Uint128, WasmMsg,
 };
 
 use cw20::Cw20ReceiveMsg;
@@ -19,7 +19,8 @@ pub fn receive_cw20(
     info: MessageInfo,
     cw20_msg: Cw20ReceiveMsg,
 ) -> Result<Response, ContractError> {
-    let config: Config = read_config(deps.storage).unwrap();
+    let config = Config::load(deps.storage)?;
+
     if config.token_contract != deps.api.addr_validate(info.sender.as_str())? {
         return Err(ContractError::IncorrectTokenContract {});
     }
@@ -63,7 +64,8 @@ pub fn init_poll(
     bet_end_time: u64,
     resolution_time: u64,
 ) -> Result<Response, ContractError> {
-    let config: Config = read_config(deps.storage).unwrap();
+    let config = Config::load(deps.storage)?;
+
     let contract_owner: Addr = config.owner;
 
     if config.creation_deposit != deposit_amount {
@@ -110,18 +112,19 @@ pub fn register_token_contract(
     token_contract: String,
     creation_deposit: Uint128,
 ) -> Result<Response, ContractError> {
-    let mut config: Config = read_config(deps.storage).unwrap();
+    let mut config = Config::load(deps.storage)?;
+
     if !String::new().eq(&config.token_contract) {
         return Err(ContractError::TokenAlreadyRegistered {});
     }
 
-    if info.sender != config.owner {
+    if !config.is_admin(&info.sender) {
         return Err(ContractError::Unauthorized {});
     }
 
     config.token_contract = deps.api.addr_validate(&token_contract)?.to_string();
     config.creation_deposit = creation_deposit;
-    store_config(deps.storage, &config)?;
+    config.save(deps.storage)?;
 
     Ok(Response::new().add_attribute("method", "register_token_contract"))
 }
@@ -132,10 +135,11 @@ pub fn update_config(
     creation_deposit: Option<Uint128>,
     reclaimable_threshold: Option<Uint128>,
     new_owner: Option<String>,
+    new_admins: Option<Vec<String>>,
 ) -> Result<Response, ContractError> {
-    let mut config: Config = read_config(deps.storage).unwrap();
+    let mut config = Config::load(deps.storage)?;
 
-    if info.sender != config.owner {
+    if !config.is_admin(&info.sender) {
         return Err(ContractError::Unauthorized {});
     }
 
@@ -150,11 +154,20 @@ pub fn update_config(
         config.reclaimable_threshold = reclaimable_threshold;
     }
 
+    if let Some(new_admins) = new_admins.as_ref() {
+        config.admins = Some(
+            new_admins
+                .iter()
+                .map(|v| deps.api.addr_validate(v))
+                .collect::<StdResult<Vec<Addr>>>()?,
+        );
+    }
+
     if let Some(new_owner) = new_owner {
         config.owner = deps.api.addr_validate(&new_owner)?;
     }
 
-    store_config(deps.storage, &config)?;
+    config.save(deps.storage)?;
 
     Ok(Response::new().add_attribute("method", "update_config"))
 }

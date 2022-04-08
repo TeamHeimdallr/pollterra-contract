@@ -27,7 +27,7 @@ mod meta_contract_tests {
     fn after_poll_init() {
         let mut deps = mock_dependencies(&[]);
 
-        let msg = InstantiateMsg {};
+        let msg = InstantiateMsg { admins: None };
         let info = mock_info("creator", &[]);
         let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
@@ -73,7 +73,7 @@ mod meta_contract_tests {
     fn proper_poll_init_with_poll_type() {
         let mut deps = mock_dependencies(&[]);
 
-        let msg = InstantiateMsg {};
+        let msg = InstantiateMsg { admins: None };
         let info = mock_info("creator", &[]);
         let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
@@ -171,7 +171,7 @@ mod meta_contract_tests {
     fn fail_poll_init_with_wrong_poll_type() {
         let mut deps = mock_dependencies(&[]);
 
-        let msg = InstantiateMsg {};
+        let msg = InstantiateMsg { admins: None };
         let info = mock_info("creator", &[]);
         let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 

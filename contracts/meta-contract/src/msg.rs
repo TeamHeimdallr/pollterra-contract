@@ -5,7 +5,9 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct InstantiateMsg {}
+pub struct InstantiateMsg {
+    pub admins: Option<Vec<String>>,
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -19,6 +21,7 @@ pub enum ExecuteMsg {
         creation_deposit: Option<Uint128>,
         reclaimable_threshold: Option<Uint128>,
         new_owner: Option<String>,
+        new_admins: Option<Vec<String>>,
     },
 }
 
