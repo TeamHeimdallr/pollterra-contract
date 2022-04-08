@@ -893,19 +893,8 @@ dependencies = [
 name = "testutils"
 version = "0.1.0"
 dependencies = [
- "cosmwasm-schema",
  "cosmwasm-std",
- "cosmwasm-storage",
- "cw-multi-test",
- "cw-storage-plus",
  "cw20",
- "cw20-base",
- "schemars",
- "serde",
- "terra-cosmwasm",
- "terraswap",
- "testutils",
- "thiserror",
 ]
 
 [[package]]
