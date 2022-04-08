@@ -71,9 +71,7 @@ pub fn init_poll(
     let config = Config::load(deps.storage)?;
 
     if config.creation_deposit != deposit_amount {
-        return Err(ContractError::InsufficientTokenDeposit(
-            config.creation_deposit,
-        ));
+        return Err(ContractError::InvalidTokenDeposit(config.creation_deposit));
     }
 
     let poll_type = match poll_type.as_str() {
