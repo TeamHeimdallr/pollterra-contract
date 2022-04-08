@@ -153,7 +153,7 @@ mod prediction_poll_tests {
             bet_end_time: 1653673600,
             resolution_time: 1653673600,
             minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
-            tax_percentage: Some(Decimal::zero()),
+            tax_percentage: Some(Decimal::percent(1_u64)),
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -200,7 +200,7 @@ mod prediction_poll_tests {
             bet_end_time: 1653673600,
             resolution_time: 1653673600,
             minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
-            tax_percentage: Some(Decimal::zero()),
+            tax_percentage: Some(Decimal::percent(1_u64)),
         };
         let info = mock_info("creator", &[]);
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -310,7 +310,7 @@ mod prediction_poll_tests {
                 to_address: "user1".to_string(),
                 amount: vec![Coin {
                     denom: DENOM.to_string(),
-                    amount: Uint128::new(2970000)
+                    amount: Uint128::new(3_000_000)
                 }]
             }),
             res.messages[0].msg
