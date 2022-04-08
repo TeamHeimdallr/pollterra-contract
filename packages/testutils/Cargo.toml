@@ -7,3 +7,6 @@ edition = "2018"
 [dependencies]
 cosmwasm-std = { version = "0.16.2" }
 cw20 = { version = "0.8.0-rc2" }
+
+[dev-dependencies]
+cw-multi-test = { version = "0.8"}

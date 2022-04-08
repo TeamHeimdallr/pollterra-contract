@@ -69,7 +69,6 @@ name = "config"
 version = "0.1.0"
 dependencies = [
  "cosmwasm-std",
- "cw-multi-test",
  "schemars",
  "serde",
 ]
@@ -895,6 +894,7 @@ name = "testutils"
 version = "0.1.0"
 dependencies = [
  "cosmwasm-std",
+ "cw-multi-test",
  "cw20",
 ]
 
