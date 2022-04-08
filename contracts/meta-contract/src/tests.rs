@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod meta_contract_tests {
     use crate::error::ContractError;
-    use crate::state::Cw20HookMsg;
+    use crate::state::{Config, Cw20HookMsg};
 
     use config::config::PollType;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
@@ -200,5 +200,47 @@ mod meta_contract_tests {
             entrypoints::execute(deps.as_mut(), mock_env(), info, msg),
             Err(ContractError::InvalidPollType {})
         ));
+    }
+
+    #[test]
+    fn is_admin_test_without_admins() {
+        let mut deps = mock_dependencies(&[]);
+
+        let msg = InstantiateMsg { admins: None };
+        let info = mock_info("creator", &[]);
+        let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        let config = Config::load(&deps.storage).unwrap();
+
+        let info = mock_info("creator", &[]);
+        assert!(config.is_admin(&info.sender));
+
+        let info = mock_info("not-creator", &[]);
+        assert!(!config.is_admin(&info.sender));
+    }
+
+    #[test]
+    fn is_admin_test_with_admins() {
+        let mut deps = mock_dependencies(&[]);
+
+        let msg = InstantiateMsg {
+            admins: Some(vec!["admin1".to_string(), "admin2".to_string()]),
+        };
+        let info = mock_info("creator", &[]);
+        let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        let config = Config::load(&deps.storage).unwrap();
+
+        let info = mock_info("creator", &[]);
+        assert!(config.is_admin(&info.sender));
+
+        let info = mock_info("not-admin", &[]);
+        assert!(!config.is_admin(&info.sender));
+
+        let info = mock_info("admin1", &[]);
+        assert!(config.is_admin(&info.sender));
+
+        let info = mock_info("admin2", &[]);
+        assert!(config.is_admin(&info.sender));
     }
 }
