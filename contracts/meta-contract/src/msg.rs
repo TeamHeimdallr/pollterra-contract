@@ -22,6 +22,10 @@ pub enum ExecuteMsg {
         poll_type: String,
         winner: Option<u64>,
     },
+    Transfer {
+        recipient: String,
+        amount: Uint128,
+    },
     UpdateConfig {
         creation_deposit: Option<Uint128>,
         reclaimable_threshold: Option<Uint128>,

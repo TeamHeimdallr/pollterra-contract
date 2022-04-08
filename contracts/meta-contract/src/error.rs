@@ -21,6 +21,9 @@ pub enum ContractError {
     #[error("Deposit doesn't match, should be {0} token")]
     InvalidTokenDeposit(Uint128),
 
+    #[error("Invalid zero amount")]
+    InvalidZeroAmount {},
+
     #[error("Insufficient balance")]
     InsufficientBalance {},
 

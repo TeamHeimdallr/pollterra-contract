@@ -3,8 +3,8 @@ use crate::msg::{Cw20HookMsg, OpinionPollExecuteMsg, PredictionPollExecuteMsg};
 use crate::state::Config;
 use config::config::PollType;
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult,
-    SubMsg, Uint128, WasmMsg,
+    from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Response,
+    StdResult, SubMsg, Uint128, WasmMsg,
 };
 
 use cw20::Cw20ReceiveMsg;
@@ -13,6 +13,7 @@ use messages::msg::PollInstantiateMsg;
 
 // reply_id is only one for now
 pub const INSTANTIATE_REPLY_ID: u64 = 1;
+const DENOM: &str = "uusd";
 
 pub fn receive_cw20(
     deps: DepsMut,
@@ -166,6 +167,48 @@ pub fn finish_poll(
     Ok(Response::new()
         .add_message(message)
         .add_attribute("method", "finish_poll"))
+}
+
+pub fn transfer(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    recipient: String,
+    amount: Uint128,
+) -> Result<Response, ContractError> {
+    let config = Config::load(deps.storage)?;
+
+    if !config.is_admin(&info.sender) {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    if amount.is_zero() {
+        return Err(ContractError::InvalidZeroAmount {});
+    }
+
+    let contract_balance = deps.querier.query_balance(&env.contract.address, DENOM)?;
+
+    if contract_balance.amount < amount {
+        return Err(ContractError::InsufficientBalance {});
+    }
+
+    let remain_amount = contract_balance.amount - amount;
+
+    let transfer_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
+        to_address: recipient.to_string(),
+        amount: vec![Coin {
+            denom: DENOM.to_string(),
+            amount,
+        }],
+    });
+
+    Ok(Response::new()
+        .add_attribute("method", "transfer")
+        .add_attribute("requester", info.sender.as_str())
+        .add_attribute("recipient", recipient)
+        .add_attribute("amount", amount)
+        .add_attribute("remain_amount", remain_amount)
+        .add_message(transfer_msg))
 }
 
 pub fn update_config(
