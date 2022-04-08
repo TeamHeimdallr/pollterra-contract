@@ -25,20 +25,15 @@ const DEFAULT_RECLAIMABLE_THRESHOLD: Uint128 = Uint128::new(1_000);
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
+    _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     Config {
-        owner: info.sender.clone(),
-        admins: match msg.admins {
-            Some(admin_list) => Some(
-                admin_list
-                    .iter()
-                    .map(|v| deps.api.addr_validate(v))
-                    .collect::<StdResult<Vec<Addr>>>()?,
-            ),
-            None => None,
-        },
+        admins: msg
+            .admins
+            .iter()
+            .map(|v| deps.api.addr_validate(v))
+            .collect::<StdResult<Vec<Addr>>>()?,
         token_contract: String::new(),
         creation_deposit: Uint128::zero(),
         reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
@@ -51,9 +46,7 @@ pub fn instantiate(
 
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    Ok(Response::new()
-        .add_attribute("method", "instantiate")
-        .add_attribute("owner", info.sender))
+    Ok(Response::new().add_attribute("method", "instantiate"))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -72,14 +65,12 @@ pub fn execute(
         ExecuteMsg::UpdateConfig {
             creation_deposit,
             reclaimable_threshold,
-            new_owner,
             new_admins,
         } => executions::update_config(
             deps,
             info,
             creation_deposit,
             reclaimable_threshold,
-            new_owner,
             new_admins,
         ),
     }

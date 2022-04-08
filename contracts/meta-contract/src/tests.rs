@@ -27,7 +27,9 @@ mod meta_contract_tests {
     fn after_poll_init() {
         let mut deps = mock_dependencies(&[]);
 
-        let msg = InstantiateMsg { admins: None };
+        let msg = InstantiateMsg {
+            admins: vec!["creator".to_string()],
+        };
         let info = mock_info("creator", &[]);
         let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
@@ -73,7 +75,9 @@ mod meta_contract_tests {
     fn proper_poll_init_with_poll_type() {
         let mut deps = mock_dependencies(&[]);
 
-        let msg = InstantiateMsg { admins: None };
+        let msg = InstantiateMsg {
+            admins: vec!["creator".to_string()],
+        };
         let info = mock_info("creator", &[]);
         let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
@@ -95,6 +99,7 @@ mod meta_contract_tests {
                 poll_type: "prediction".to_string(),
                 bet_end_time: 1653673600,
                 resolution_time: 1653673600,
+                poll_admin: None,
             })
             .unwrap(),
         });
@@ -103,7 +108,7 @@ mod meta_contract_tests {
 
         let info = mock_info(TOKEN_CONTRACT, &[]);
         let msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Instantiate {
-            admin: Some("creator".to_string()),
+            admin: None,
             code_id: TEST_CODE_ID,
             msg: to_binary(&PollInstantiateMsg {
                 generator: info.sender,
@@ -136,6 +141,7 @@ mod meta_contract_tests {
                 poll_type: "opinion".to_string(),
                 bet_end_time: 1653673600,
                 resolution_time: 1653673600,
+                poll_admin: None,
             })
             .unwrap(),
         });
@@ -144,7 +150,7 @@ mod meta_contract_tests {
 
         let info = mock_info(TOKEN_CONTRACT, &[]);
         let msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Instantiate {
-            admin: Some("creator".to_string()),
+            admin: None,
             code_id: TEST_CODE_ID,
             msg: to_binary(&PollInstantiateMsg {
                 generator: info.sender,
@@ -171,7 +177,9 @@ mod meta_contract_tests {
     fn fail_poll_init_with_wrong_poll_type() {
         let mut deps = mock_dependencies(&[]);
 
-        let msg = InstantiateMsg { admins: None };
+        let msg = InstantiateMsg {
+            admins: vec!["creator".to_string()],
+        };
         let info = mock_info("creator", &[]);
         let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
@@ -192,6 +200,7 @@ mod meta_contract_tests {
                 poll_type: "Wrong Poll Type".to_string(),
                 bet_end_time: 1653673600,
                 resolution_time: 1653673600,
+                poll_admin: None,
             })
             .unwrap(),
         });
@@ -203,28 +212,11 @@ mod meta_contract_tests {
     }
 
     #[test]
-    fn is_admin_test_without_admins() {
-        let mut deps = mock_dependencies(&[]);
-
-        let msg = InstantiateMsg { admins: None };
-        let info = mock_info("creator", &[]);
-        let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-
-        let config = Config::load(&deps.storage).unwrap();
-
-        let info = mock_info("creator", &[]);
-        assert!(config.is_admin(&info.sender));
-
-        let info = mock_info("not-creator", &[]);
-        assert!(!config.is_admin(&info.sender));
-    }
-
-    #[test]
-    fn is_admin_test_with_admins() {
+    fn is_admin_test() {
         let mut deps = mock_dependencies(&[]);
 
         let msg = InstantiateMsg {
-            admins: Some(vec!["admin1".to_string(), "admin2".to_string()]),
+            admins: vec!["admin1".to_string(), "admin2".to_string()],
         };
         let info = mock_info("creator", &[]);
         let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -232,7 +224,7 @@ mod meta_contract_tests {
         let config = Config::load(&deps.storage).unwrap();
 
         let info = mock_info("creator", &[]);
-        assert!(config.is_admin(&info.sender));
+        assert!(!config.is_admin(&info.sender));
 
         let info = mock_info("not-admin", &[]);
         assert!(!config.is_admin(&info.sender));

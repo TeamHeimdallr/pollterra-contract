@@ -38,6 +38,7 @@ pub fn receive_cw20(
             poll_type,
             bet_end_time,
             resolution_time,
+            poll_admin,
         }) => init_poll(
             deps,
             info,
@@ -48,6 +49,7 @@ pub fn receive_cw20(
             poll_type,
             bet_end_time,
             resolution_time,
+            poll_admin,
         ),
         _ => Err(ContractError::InvalidCw20Msg {}),
     }
@@ -64,10 +66,9 @@ pub fn init_poll(
     poll_type: String,
     bet_end_time: u64,
     resolution_time: u64,
+    poll_admin: Option<String>,
 ) -> Result<Response, ContractError> {
     let config = Config::load(deps.storage)?;
-
-    let contract_owner: Addr = config.owner;
 
     if config.creation_deposit != deposit_amount {
         return Err(ContractError::InsufficientTokenDeposit(
@@ -82,7 +83,7 @@ pub fn init_poll(
     };
 
     let msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Instantiate {
-        admin: Some(contract_owner.to_string()),
+        admin: poll_admin,
         code_id,
         msg: to_binary(&PollInstantiateMsg {
             generator: deps.api.addr_validate(&generator)?,
@@ -135,7 +136,6 @@ pub fn update_config(
     info: MessageInfo,
     creation_deposit: Option<Uint128>,
     reclaimable_threshold: Option<Uint128>,
-    new_owner: Option<String>,
     new_admins: Option<Vec<String>>,
 ) -> Result<Response, ContractError> {
     let mut config = Config::load(deps.storage)?;
@@ -156,16 +156,10 @@ pub fn update_config(
     }
 
     if let Some(new_admins) = new_admins.as_ref() {
-        config.admins = Some(
-            new_admins
-                .iter()
-                .map(|v| deps.api.addr_validate(v))
-                .collect::<StdResult<Vec<Addr>>>()?,
-        );
-    }
-
-    if let Some(new_owner) = new_owner {
-        config.owner = deps.api.addr_validate(&new_owner)?;
+        config.admins = new_admins
+            .iter()
+            .map(|v| deps.api.addr_validate(v))
+            .collect::<StdResult<Vec<Addr>>>()?;
     }
 
     config.save(deps.storage)?;

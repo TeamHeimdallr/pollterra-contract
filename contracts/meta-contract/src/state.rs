@@ -5,8 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Config {
-    pub owner: Addr,
-    pub admins: Option<Vec<Addr>>,
+    pub admins: Vec<Addr>,
     pub token_contract: String,
     pub creation_deposit: Uint128,
     pub reclaimable_threshold: Uint128,
@@ -25,11 +24,7 @@ impl Config {
     }
 
     pub fn is_admin(&self, address: &Addr) -> bool {
-        let admin_check = match self.admins.as_ref() {
-            Some(admin_list) => admin_list.contains(address),
-            None => false,
-        };
-        admin_check || self.owner == *address
+        self.admins.contains(address)
     }
 }
 
