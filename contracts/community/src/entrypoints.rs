@@ -1,17 +1,16 @@
 #[cfg(not(feature = "library"))]
-use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
+    entry_point, to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
+    Uint128,
 };
-
-use crate::query_msgs::QueryMsg;
-use crate::state::{ContractConfig, ContractState};
-
 use cw2::set_contract_version;
 
 use crate::error::ContractError;
-use crate::executions;
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg};
+use crate::query_msgs::QueryMsg;
+use crate::state::{ContractConfig, ContractState};
+
+use crate::executions;
 use crate::queries;
 
 // version info for migration info

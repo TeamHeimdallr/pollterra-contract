@@ -30,7 +30,7 @@ pub fn get_allowance(
     address: String,
 ) -> Result<AllowanceResponse, ContractError> {
     let address = deps.api.addr_validate(address.as_str())?;
-    let allowance = Allowance::load(deps.storage, &address)?;
+    let allowance = Allowance::load_or_default(deps.storage, &address)?;
 
     Ok(AllowanceResponse {
         address: address.to_string(),

@@ -1,3 +1,5 @@
+use testutils::mock_querier::mock_dependencies;
+
 use crate::contract::{execute, query};
 use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::state::{
@@ -8,7 +10,6 @@ use crate::state::{
 use crate::tests::common::{
     DEFAULT_PROPOSAL_DEPOSIT, DEFAULT_VOTING_PERIOD, TEST_CREATOR, TEST_VOTER, VOTING_TOKEN,
 };
-use crate::tests::mock_querier::mock_dependencies;
 use crate::tests::{common, instantiate, poll};
 use crate::ContractError;
 use cosmwasm_std::testing::{mock_env, mock_info, MOCK_CONTRACT_ADDR};

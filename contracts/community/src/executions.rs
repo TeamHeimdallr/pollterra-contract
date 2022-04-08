@@ -1,6 +1,5 @@
 use cosmwasm_std::{
-    to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Uint128,
-    WasmMsg,
+    to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, WasmMsg,
 };
 use cw20::Cw20ExecuteMsg;
 
@@ -55,9 +54,7 @@ pub fn increase_allowance(
         .load_balance(&deps.querier, &env, &config.managing_token)?
         .free_balance;
     if free_balance < amount {
-        return Err(ContractError::Std(StdError::generic_err(
-            "Insufficient balance",
-        )));
+        return Err(ContractError::InsufficientFreeBalance(free_balance));
     }
 
     let mut response = Response::new().add_attribute("action", "increase_allowance");
@@ -99,9 +96,9 @@ pub fn decrease_allowance(
 
     let amount = if let Some(amount) = amount {
         if allowance.remain_amount < amount {
-            return Err(ContractError::Std(StdError::generic_err(
-                "Insufficient remain amount",
-            )));
+            return Err(ContractError::InsufficientRemainAmount(
+                allowance.remain_amount,
+            ));
         } else {
             amount
         }
@@ -143,9 +140,7 @@ pub fn transfer(
         let balance = state.load_balance(&deps.querier, &env, &config.managing_token)?;
 
         if balance.free_balance < amount {
-            return Err(ContractError::Std(StdError::generic_err(
-                "Insufficient balance",
-            )));
+            return Err(ContractError::InsufficientFreeBalance(balance.free_balance));
         }
 
         balance.free_balance
@@ -154,7 +149,9 @@ pub fn transfer(
 
         if let Some(mut allowance) = allowance {
             if allowance.remain_amount < amount {
-                return Err(ContractError::ExceedLimit {});
+                return Err(ContractError::InsufficientRemainAmount(
+                    allowance.remain_amount,
+                ));
             }
 
             allowance.remain_amount = allowance.remain_amount.checked_sub(amount)?;
@@ -165,7 +162,7 @@ pub fn transfer(
 
             allowance.remain_amount
         } else {
-            return Err(ContractError::Unauthorized {});
+            return Err(ContractError::InsufficientRemainAmount(Uint128::zero()));
         }
     };
 

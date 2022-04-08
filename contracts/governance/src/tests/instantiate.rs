@@ -2,6 +2,8 @@ use cosmwasm_std::testing::{mock_env, mock_info, MOCK_CONTRACT_ADDR};
 use cosmwasm_std::{coins, from_binary, DepsMut};
 use cosmwasm_std::{Api, CanonicalAddr, Decimal, Uint128};
 
+use testutils::mock_querier::mock_dependencies;
+
 use crate::contract::{execute, instantiate, query};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{config_read, state_read, Config, ConfigResponse, State};
@@ -9,7 +11,6 @@ use crate::tests::common::{
     DEFAULT_EXPIRATION_PERIOD, DEFAULT_FIX_PERIOD, DEFAULT_PROPOSAL_DEPOSIT, DEFAULT_QUORUM,
     DEFAULT_THRESHOLD, DEFAULT_TIMELOCK_PERIOD, DEFAULT_VOTING_PERIOD, TEST_CREATOR, VOTING_TOKEN,
 };
-use crate::tests::mock_querier::mock_dependencies;
 use crate::tests::poll::mock_register_voting_token;
 use crate::ContractError;
 
