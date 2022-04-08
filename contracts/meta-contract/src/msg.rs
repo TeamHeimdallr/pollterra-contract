@@ -1,4 +1,5 @@
 use crate::state::{Config, State};
+use config::config::PollType;
 use cosmwasm_std::{Addr, Uint128};
 use cw20::Cw20ReceiveMsg;
 use schemars::JsonSchema;
@@ -16,6 +17,11 @@ pub enum ExecuteMsg {
     RegisterTokenContract {
         token_contract: String,
         creation_deposit: Uint128,
+    },
+    FinishPoll {
+        poll_contract: String,
+        poll_type: PollType,
+        winner: Option<u64>,
     },
     UpdateConfig {
         creation_deposit: Option<Uint128>,
@@ -51,4 +57,16 @@ pub enum Cw20HookMsg {
         resolution_time: u64,
         poll_admin: Option<String>,
     },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum PredictionPollExecuteMsg {
+    FinishPoll { winner: u64 },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum OpinionPollExecuteMsg {
+    FinishPoll {},
 }

@@ -62,6 +62,11 @@ pub fn execute(
             token_contract,
             creation_deposit,
         } => executions::register_token_contract(deps, info, token_contract, creation_deposit),
+        ExecuteMsg::FinishPoll {
+            poll_contract,
+            poll_type,
+            winner,
+        } => executions::finish_poll(deps, info, poll_contract, poll_type, winner),
         ExecuteMsg::UpdateConfig {
             creation_deposit,
             reclaimable_threshold,

@@ -27,6 +27,9 @@ pub enum ContractError {
     #[error("Token contract is already registered")]
     TokenAlreadyRegistered {},
 
+    #[error("Empty winner")]
+    EmptyWinner {},
+
     #[error("Token contract is not registered")]
     TokenNotRegistered {},
 

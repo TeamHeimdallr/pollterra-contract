@@ -1,5 +1,5 @@
 use crate::error::ContractError;
-use crate::msg::Cw20HookMsg;
+use crate::msg::{Cw20HookMsg, OpinionPollExecuteMsg, PredictionPollExecuteMsg};
 use crate::state::Config;
 use config::config::PollType;
 use cosmwasm_std::{
@@ -129,6 +129,39 @@ pub fn register_token_contract(
     config.save(deps.storage)?;
 
     Ok(Response::new().add_attribute("method", "register_token_contract"))
+}
+
+pub fn finish_poll(
+    deps: DepsMut,
+    info: MessageInfo,
+    poll_contract: String,
+    poll_type: PollType,
+    winner: Option<u64>,
+) -> Result<Response, ContractError> {
+    let config = Config::load(deps.storage)?;
+
+    if !config.is_admin(&info.sender) {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    if poll_type == PollType::Prediction && winner.is_none() {
+        return Err(ContractError::EmptyWinner {});
+    }
+
+    let message: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Execute {
+        contract_addr: poll_contract,
+        msg: match poll_type {
+            PollType::Prediction => to_binary(&PredictionPollExecuteMsg::FinishPoll {
+                winner: winner.unwrap(),
+            })?,
+            PollType::Opinion => to_binary(&OpinionPollExecuteMsg::FinishPoll {})?,
+        },
+        funds: vec![],
+    });
+
+    Ok(Response::new()
+        .add_message(message)
+        .add_attribute("method", "finish_poll"))
 }
 
 pub fn update_config(
