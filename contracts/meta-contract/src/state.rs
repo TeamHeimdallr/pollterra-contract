@@ -51,15 +51,3 @@ impl State {
 pub const STATE: Item<State> = Item::new("state");
 pub const CONFIG: Item<Config> = Item::new("config");
 pub const CONTRACTS: Map<&Addr, ()> = Map::new("contracts");
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum Cw20HookMsg {
-    InitPoll {
-        code_id: u64,
-        poll_name: String,
-        poll_type: String,
-        bet_end_time: u64,
-        resolution_time: u64,
-    },
-}

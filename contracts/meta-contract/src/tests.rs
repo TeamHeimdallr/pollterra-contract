@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod meta_contract_tests {
     use crate::error::ContractError;
-    use crate::state::{Config, Cw20HookMsg};
+    use crate::state::Config;
 
     use config::config::PollType;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
@@ -13,7 +13,7 @@ mod meta_contract_tests {
     use protobuf::Message;
 
     use crate::entrypoints;
-    use crate::msg::{ExecuteMsg, InstantiateMsg};
+    use crate::msg::{Cw20HookMsg, ExecuteMsg, InstantiateMsg};
     use crate::response::MsgInstantiateContractResponse;
     use messages::msg::PollInstantiateMsg;
 

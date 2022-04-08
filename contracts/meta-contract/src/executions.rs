@@ -1,5 +1,6 @@
 use crate::error::ContractError;
-use crate::state::{Config, Cw20HookMsg};
+use crate::msg::Cw20HookMsg;
+use crate::state::Config;
 use config::config::PollType;
 use cosmwasm_std::{
     from_binary, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult,
