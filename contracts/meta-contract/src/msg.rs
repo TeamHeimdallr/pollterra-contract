@@ -1,5 +1,4 @@
 use crate::state::{Config, State};
-use config::config::PollType;
 use cosmwasm_std::{Addr, Uint128};
 use cw20::Cw20ReceiveMsg;
 use schemars::JsonSchema;
@@ -20,7 +19,7 @@ pub enum ExecuteMsg {
     },
     FinishPoll {
         poll_contract: String,
-        poll_type: PollType,
+        poll_type: String,
         winner: Option<u64>,
     },
     UpdateConfig {

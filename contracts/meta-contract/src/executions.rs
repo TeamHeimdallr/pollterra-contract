@@ -133,7 +133,7 @@ pub fn finish_poll(
     deps: DepsMut,
     info: MessageInfo,
     poll_contract: String,
-    poll_type: PollType,
+    poll_type: String,
     winner: Option<u64>,
 ) -> Result<Response, ContractError> {
     let config = Config::load(deps.storage)?;
@@ -141,6 +141,12 @@ pub fn finish_poll(
     if !config.is_admin(&info.sender) {
         return Err(ContractError::Unauthorized {});
     }
+
+    let poll_type = match poll_type.as_str() {
+        "prediction" => Ok(PollType::Prediction),
+        "opinion" => Ok(PollType::Opinion),
+        _ => Err(ContractError::InvalidPollType {}),
+    }?;
 
     if poll_type == PollType::Prediction && winner.is_none() {
         return Err(ContractError::EmptyWinner {});
