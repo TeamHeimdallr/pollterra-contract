@@ -5,7 +5,9 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct InstantiateMsg {}
+pub struct InstantiateMsg {
+    pub admins: Vec<String>,
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -18,7 +20,7 @@ pub enum ExecuteMsg {
     UpdateConfig {
         creation_deposit: Option<Uint128>,
         reclaimable_threshold: Option<Uint128>,
-        new_owner: Option<String>,
+        new_admins: Option<Vec<String>>,
     },
 }
 
@@ -36,4 +38,17 @@ pub type StateResponse = State;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ContractsResponse {
     pub contracts: Vec<Addr>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum Cw20HookMsg {
+    InitPoll {
+        code_id: u64,
+        poll_name: String,
+        poll_type: String,
+        bet_end_time: u64,
+        resolution_time: u64,
+        poll_admin: Option<String>,
+    },
 }

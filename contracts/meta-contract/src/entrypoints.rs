@@ -1,6 +1,6 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult,
+    to_binary, Addr, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult,
     Uint128,
 };
 use cw2::set_contract_version;
@@ -9,7 +9,7 @@ use std::str;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{store_config, store_state, Config, State};
+use crate::state::{Config, State};
 use crate::{executions, queries, replies};
 
 // version info for migration info
@@ -25,25 +25,28 @@ const DEFAULT_RECLAIMABLE_THRESHOLD: Uint128 = Uint128::new(1_000);
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
-    _msg: InstantiateMsg,
+    _info: MessageInfo,
+    msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let config = Config {
-        owner: info.sender.clone(),
+    Config {
+        admins: msg
+            .admins
+            .iter()
+            .map(|v| deps.api.addr_validate(v))
+            .collect::<StdResult<Vec<Addr>>>()?,
         token_contract: String::new(),
         creation_deposit: Uint128::zero(),
         reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
         minimum_bet_amount: Uint128::from(1_000u128),
         tax_percentage: Decimal::percent(5),
-    };
-    let state = State { num_contract: 0 };
-    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-    store_config(deps.storage, &config)?;
-    store_state(deps.storage, &state)?;
+    }
+    .save(deps.storage)?;
 
-    Ok(Response::new()
-        .add_attribute("method", "instantiate")
-        .add_attribute("owner", info.sender))
+    State { num_contract: 0 }.save(deps.storage)?;
+
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
+    Ok(Response::new().add_attribute("method", "instantiate"))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -62,13 +65,13 @@ pub fn execute(
         ExecuteMsg::UpdateConfig {
             creation_deposit,
             reclaimable_threshold,
-            new_owner,
+            new_admins,
         } => executions::update_config(
             deps,
             info,
             creation_deposit,
             reclaimable_threshold,
-            new_owner,
+            new_admins,
         ),
     }
 }

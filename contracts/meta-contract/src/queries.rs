@@ -3,15 +3,15 @@ use cosmwasm_std::{Deps, Order, StdResult};
 use std::str;
 
 use crate::msg::{ConfigResponse, ContractsResponse, StateResponse};
-use crate::state::{read_config, read_state, CONTRACTS};
+use crate::state::{Config, State, CONTRACTS};
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
-    let config = read_config(deps.storage)?;
+    let config = Config::load(deps.storage)?;
     Ok(config)
 }
 
 pub fn query_state(deps: Deps) -> StdResult<StateResponse> {
-    let state = read_state(deps.storage)?;
+    let state = State::load(deps.storage)?;
     Ok(state)
 }
 

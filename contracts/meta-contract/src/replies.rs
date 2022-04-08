@@ -7,7 +7,7 @@ use cw20::Cw20ExecuteMsg;
 use protobuf::Message;
 
 use crate::response::MsgInstantiateContractResponse;
-use crate::state::{read_config, read_state, store_state, Config, State, CONTRACTS};
+use crate::state::{Config, State, CONTRACTS};
 
 pub fn after_poll_init(deps: DepsMut, msg: Reply) -> Result<Response, ContractError> {
     let reply_result = msg.result.unwrap();
@@ -20,9 +20,9 @@ pub fn after_poll_init(deps: DepsMut, msg: Reply) -> Result<Response, ContractEr
 
     let addr = &deps.api.addr_validate(contract_address)?;
     CONTRACTS.save(deps.storage, addr, &())?;
-    let mut state: State = read_state(deps.storage)?;
+    let mut state: State = State::load(deps.storage)?;
     state.num_contract += 1;
-    store_state(deps.storage, &state)?;
+    state.save(deps.storage)?;
 
     let event_vec: Vec<Event> = reply_result.events;
 
@@ -42,7 +42,7 @@ pub fn after_poll_init(deps: DepsMut, msg: Reply) -> Result<Response, ContractEr
     }
     let deposit_amount = Uint128::from(deposit_amount.unwrap().parse::<u128>().unwrap());
 
-    let config: Config = read_config(deps.storage).unwrap();
+    let config: Config = Config::load(deps.storage).unwrap();
 
     Ok(Response::new()
         .add_attribute("method", "reply")
