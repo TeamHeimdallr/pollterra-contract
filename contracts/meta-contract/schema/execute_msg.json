@@ -41,57 +41,46 @@
     {
       "type": "object",
       "required": [
-        "update_creation_deposit"
+        "update_config"
       ],
       "properties": {
-        "update_creation_deposit": {
+        "update_config": {
           "type": "object",
-          "required": [
-            "creation_deposit"
-          ],
           "properties": {
             "creation_deposit": {
-              "$ref": "#/definitions/Uint128"
-            }
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
-        "update_reclaimable_threshold"
-      ],
-      "properties": {
-        "update_reclaimable_threshold": {
-          "type": "object",
-          "required": [
-            "reclaimable_threshold"
-          ],
-          "properties": {
-            "reclaimable_threshold": {
-              "$ref": "#/definitions/Uint128"
-            }
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
-        "transfer_owner"
-      ],
-      "properties": {
-        "transfer_owner": {
-          "type": "object",
-          "required": [
-            "new_owner"
-          ],
-          "properties": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Uint128"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "new_admins": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
             "new_owner": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reclaimable_threshold": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Uint128"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           }
         }
