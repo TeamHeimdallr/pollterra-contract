@@ -60,6 +60,7 @@ dependencies = [
  "cw20",
  "schemars",
  "serde",
+ "testutils",
  "thiserror",
 ]
 
@@ -428,6 +429,7 @@ dependencies = [
  "serde",
  "terra-cosmwasm",
  "terraswap",
+ "testutils",
  "thiserror",
 ]
 
@@ -885,6 +887,14 @@ dependencies = [
  "schemars",
  "serde",
  "terra-cosmwasm",
+]
+
+[[package]]
+name = "testutils"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-std",
+ "cw20",
 ]
 
 [[package]]

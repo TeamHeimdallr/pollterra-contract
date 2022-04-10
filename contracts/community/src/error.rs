@@ -1,4 +1,4 @@
-use cosmwasm_std::{OverflowError, StdError};
+use cosmwasm_std::{OverflowError, StdError, Uint128};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -9,17 +9,15 @@ pub enum ContractError {
     #[error("{0}")]
     OverflowError(#[from] OverflowError),
 
-    #[error("Unauthorized")]
+    #[error("Unauthorized: only admins are able")]
     Unauthorized {},
 
-    #[error("Custom Error val: {val:?}")]
-    CustomError { val: String },
-
-    #[error("Invalid zero amount")]
+    #[error("Invalid zero amount: do not send or transfer zero value")]
     InvalidZeroAmount {},
 
-    #[error("Exceed limit")]
-    ExceedLimit {},
-    // Add any other custom errors you like here.
-    // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
+    #[error("Insufficient free balance. Current free balance is {0}")]
+    InsufficientFreeBalance(Uint128),
+
+    #[error("Insufficient remain amount of the address. Current remain amount is {0}")]
+    InsufficientRemainAmount(Uint128),
 }
