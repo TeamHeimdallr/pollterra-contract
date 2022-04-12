@@ -4,6 +4,9 @@ use messages::msg::PollInstantiateMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct MigrateMsg {}
+
 pub type InstantiateMsg = PollInstantiateMsg;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

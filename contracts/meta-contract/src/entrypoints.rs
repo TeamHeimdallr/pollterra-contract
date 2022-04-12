@@ -8,7 +8,7 @@ use cw2::set_contract_version;
 use std::str;
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, MigrateMsg};
 use crate::state::{Config, State};
 use crate::{executions, queries, replies};
 
@@ -90,6 +90,11 @@ pub fn reply(deps: DepsMut, _env: Env, msg: Reply) -> Result<Response, ContractE
         INSTANTIATE_REPLY_ID => replies::after_poll_init(deps, msg),
         _ => Err(ContractError::InvalidReplyId {}),
     }
+}
+
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, ContractError> {
+    Ok(Response::default())
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
