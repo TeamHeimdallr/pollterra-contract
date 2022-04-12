@@ -65,11 +65,7 @@ pub fn try_bet(
         (&side.to_be_bytes(), &addr),
         |exists| -> StdResult<Uint128> {
             match exists {
-                Some(bet) => {
-                    let mut modified = bet;
-                    modified += sent;
-                    Ok(modified)
-                }
+                Some(bet) => Ok(bet + sent),
                 None => Ok(sent),
             }
         },
@@ -78,11 +74,7 @@ pub fn try_bet(
     // add bet amount to USER_TOTAL_AMOUNT state (accumulate both side)
     USER_TOTAL_AMOUNT.update(deps.storage, &addr, |exists| -> StdResult<Uint128> {
         match exists {
-            Some(bet) => {
-                let mut modified = bet;
-                modified += sent;
-                Ok(modified)
-            }
+            Some(bet) => Ok(bet + sent),
             None => Ok(sent),
         }
     })?;
@@ -93,11 +85,7 @@ pub fn try_bet(
         &side.to_be_bytes(),
         |exists| -> StdResult<Uint128> {
             match exists {
-                Some(bet) => {
-                    let mut modified = bet;
-                    modified += sent;
-                    Ok(modified)
-                }
+                Some(bet) => Ok(bet + sent),
                 None => Ok(sent),
             }
         },
