@@ -5,6 +5,9 @@ use serde::{Deserialize, Serialize};
 
 use config::config::PollStatus;
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct MigrateMsg {}
+
 pub type InstantiateMsg = PollInstantiateMsg;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
