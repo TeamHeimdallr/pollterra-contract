@@ -126,6 +126,34 @@ mod community_tests {
     }
 
     #[test]
+    fn register_distribution_failed_unauthorized() {
+        let mut deps = mock_dependencies(&[]);
+        mock_instantiate(deps.as_mut());
+
+        deps.querier.with_token_balances(&[(
+            &POLLTERRA_TOKEN.to_string(),
+            &[(&MOCK_CONTRACT_ADDR.to_string(), &Uint128::from(20_000u128))],
+        )]);
+
+        let info = mock_info(NOT_ADMIN, &[]);
+        let start_height = 10000;
+        let end_height = 30000;
+        let amount = Uint128::new(10_000);
+
+        let msg = ExecuteMsg::RegisterDistribution {
+            start_height,
+            end_height,
+            recipient: RECIPIENT.to_string(),
+            amount,
+            message: None,
+        };
+        assert!(matches!(
+            entrypoints::execute(deps.as_mut(), mock_env(), info, msg),
+            Err(ContractError::Unauthorized {})
+        ));
+    }
+
+    #[test]
     fn proper_update_distribution() {
         let mut deps = mock_dependencies(&[]);
         mock_instantiate(deps.as_mut());
@@ -191,5 +219,49 @@ mod community_tests {
             ),
             res.distributions[0].released_amount
         );
+    }
+
+    #[test]
+    fn update_distribution_failed_unauthorized() {
+        let mut deps = mock_dependencies(&[]);
+        mock_instantiate(deps.as_mut());
+
+        deps.querier.with_token_balances(&[(
+            &POLLTERRA_TOKEN.to_string(),
+            &[(&MOCK_CONTRACT_ADDR.to_string(), &Uint128::from(20_000u128))],
+        )]);
+
+        let info = mock_info(ADMIN_0, &[]);
+        let start_height = 20000;
+        let end_height = 40000;
+        let amount = Uint128::new(10_000);
+
+        let new_start_height = 30000;
+        let new_end_height = 50000;
+        let new_amount = Uint128::new(20_000);
+
+        let msg = ExecuteMsg::RegisterDistribution {
+            start_height,
+            end_height,
+            recipient: RECIPIENT.to_string(),
+            amount,
+            message: None,
+        };
+        let res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg);
+        let distribution_id: u64 = res.unwrap().attributes[1].value.parse().unwrap();
+
+        let msg = ExecuteMsg::UpdateDistribution {
+            id: distribution_id,
+            start_height: Some(new_start_height),
+            end_height: Some(new_end_height),
+            amount: Some(new_amount),
+            message: None,
+        };
+
+        let info = mock_info(NOT_ADMIN, &[]);
+        assert!(matches!(
+            entrypoints::execute(deps.as_mut(), mock_env(), info, msg),
+            Err(ContractError::Unauthorized {})
+        ));
     }
 }
