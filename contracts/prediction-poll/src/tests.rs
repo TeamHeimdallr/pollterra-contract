@@ -1,13 +1,13 @@
 #[cfg(test)]
 mod prediction_poll_tests {
     use crate::entrypoints::{execute, instantiate, query};
-    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
+    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info, MOCK_CONTRACT_ADDR};
 
     use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, UserBetResponse, UserRewardsResponse};
     use crate::state::{Config, State};
     use config::config::PollType;
     use cosmwasm_std::{
-        coins, from_binary, Addr, BankMsg, Coin, CosmosMsg, Decimal, Order, Timestamp, Uint128,
+        coins, from_binary, Addr, BankMsg, Coin, CosmosMsg, Decimal, Timestamp, Uint128,
     };
 
     const DENOM: &str = "uusd";
@@ -167,6 +167,8 @@ mod prediction_poll_tests {
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         env.block.time = Timestamp::from_seconds(2000000000);
+        deps.querier
+            .update_balance(MOCK_CONTRACT_ADDR, coins(3_000_000, DENOM));
 
         let msg = ExecuteMsg::FinishPoll { winner: 0 };
         let info = mock_info("creator", &[]);
@@ -181,7 +183,7 @@ mod prediction_poll_tests {
         )
         .unwrap();
         let value: UserRewardsResponse = from_binary(&res).unwrap();
-        assert_eq!(Uint128::new(2970000), value.reward);
+        assert_eq!(Uint128::new(2980000), value.reward);
     }
 
     #[test]
@@ -214,6 +216,8 @@ mod prediction_poll_tests {
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         env.block.time = Timestamp::from_seconds(2000000000);
+        deps.querier
+            .update_balance(MOCK_CONTRACT_ADDR, coins(3_000_000, DENOM));
 
         let msg = ExecuteMsg::FinishPoll { winner: 0 };
         let info = mock_info("creator", &[]);
@@ -228,7 +232,7 @@ mod prediction_poll_tests {
         )
         .unwrap();
         let value: UserRewardsResponse = from_binary(&res).unwrap();
-        assert_eq!(Uint128::new(2970000), value.reward);
+        assert_eq!(Uint128::new(2980000), value.reward);
 
         let msg = ExecuteMsg::Claim {};
         let info = mock_info("user1", &[]);
@@ -238,7 +242,7 @@ mod prediction_poll_tests {
                 to_address: "user1".to_string(),
                 amount: vec![Coin {
                     denom: DENOM.to_string(),
-                    amount: Uint128::new(2970000)
+                    amount: Uint128::new(2980000)
                 }]
             }),
             res.messages[0].msg
@@ -254,85 +258,6 @@ mod prediction_poll_tests {
         .unwrap();
         let value: UserRewardsResponse = from_binary(&res).unwrap();
         assert_eq!(Uint128::new(0), value.reward);
-    }
-
-    #[test]
-    fn reset_poll() {
-        let mut deps = mock_dependencies(&[]);
-        let mut env = mock_env();
-        env.block.time = Timestamp::from_seconds(1649673600);
-
-        let msg = InstantiateMsg {
-            generator: Addr::unchecked("generator"),
-            token_contract: "terra1pollterratoken".to_string(),
-            deposit_amount: DEPOSIT_AMOUNT,
-            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
-            poll_name: "test_poll".to_string(),
-            poll_type: PollType::Prediction,
-            bet_end_time: 1653673600,
-            resolution_time: 1653673600,
-            minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
-            tax_percentage: Some(Decimal::zero()),
-        };
-        let info = mock_info("creator", &[]);
-        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-
-        let msg = ExecuteMsg::Bet { side: 0 };
-        let info = mock_info("user1", &coins(1_000_000, DENOM));
-        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
-
-        let msg = ExecuteMsg::Bet { side: 1 };
-        let info = mock_info("user2", &coins(2_000_000, DENOM));
-        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
-
-        env.block.time = Timestamp::from_seconds(2000000000);
-
-        let msg = ExecuteMsg::FinishPoll { winner: 0 };
-        let info = mock_info("creator", &[]);
-        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
-
-        let cnt = deps
-            .as_mut()
-            .storage
-            .range(None, None, Order::Ascending)
-            .count();
-        // CONFIG, STATE, CONTRACT, (BETS, USERS_TOTAL_AMOUNT, SIDE_TOTAL_AMOUNT) * 2, REWARDS
-        assert_eq!(10, cnt);
-
-        let msg = ExecuteMsg::ResetPoll {
-            poll_name: "ended_poll".to_string(),
-            bet_end_time: 2653673600,
-        };
-        let info = mock_info("creator", &[]);
-        let res = execute(deps.as_mut(), env, info, msg).unwrap();
-        assert_eq!(
-            CosmosMsg::Bank(BankMsg::Send {
-                to_address: "user1".to_string(),
-                amount: vec![Coin {
-                    denom: DENOM.to_string(),
-                    amount: Uint128::new(3_000_000)
-                }]
-            }),
-            res.messages[0].msg
-        );
-
-        assert_eq!(
-            CosmosMsg::Bank(BankMsg::Send {
-                to_address: "creator".to_string(),
-                amount: vec![Coin {
-                    denom: DENOM.to_string(),
-                    amount: Uint128::zero() // Can't query balance of this contract in local
-                }]
-            }),
-            res.messages[1].msg
-        );
-
-        let cnt = deps
-            .as_mut()
-            .storage
-            .range(None, None, Order::Ascending)
-            .count();
-        assert_eq!(2, cnt); // STATE, CONTRACT
     }
 
     #[test]

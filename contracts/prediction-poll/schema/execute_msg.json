@@ -73,32 +73,6 @@
     {
       "type": "object",
       "required": [
-        "reset_poll"
-      ],
-      "properties": {
-        "reset_poll": {
-          "type": "object",
-          "required": [
-            "bet_end_time",
-            "poll_name"
-          ],
-          "properties": {
-            "bet_end_time": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
-            },
-            "poll_name": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
         "reclaim_deposit"
       ],
       "properties": {
