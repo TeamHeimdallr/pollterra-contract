@@ -3,6 +3,7 @@ mod prediction_poll_tests {
     use crate::entrypoints::{execute, instantiate, query};
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
 
+    use crate::error::ContractError;
     use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, UserVoteResponse};
     use crate::state::{Config, State};
     use config::config::PollType;
@@ -87,6 +88,66 @@ mod prediction_poll_tests {
         .unwrap();
         let value: UserVoteResponse = from_binary(&res).unwrap();
         assert!(value.side.is_none());
+    }
+
+    #[test]
+    fn change_side() {
+        let mut deps = mock_dependencies(&[]);
+        let mut env = mock_env();
+        env.block.time = Timestamp::from_seconds(1649673600);
+
+        let msg = InstantiateMsg {
+            generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
+            deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
+            poll_name: "test_poll".to_string(),
+            poll_type: PollType::Opinion,
+            bet_end_time: 1653673600,
+            resolution_time: 1653673600,
+            minimum_bet_amount: None,
+            tax_percentage: None,
+        };
+        let info = mock_info("creator", &[]);
+        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        let info = mock_info("user", &[]);
+        let msg = ExecuteMsg::Vote { side: 0 };
+        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+        let res = query(
+            deps.as_ref(),
+            mock_env(),
+            QueryMsg::UserVote {
+                address: "user".to_string(),
+            },
+        )
+        .unwrap();
+        let value: UserVoteResponse = from_binary(&res).unwrap();
+        assert_eq!(0u64, value.side.unwrap());
+
+        let info = mock_info("user", &[]);
+        let msg = ExecuteMsg::ChangeSide { side: 1 };
+        let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+        let res = query(
+            deps.as_ref(),
+            mock_env(),
+            QueryMsg::UserVote {
+                address: "user".to_string(),
+            },
+        )
+        .unwrap();
+        let value: UserVoteResponse = from_binary(&res).unwrap();
+        assert_eq!(1u64, value.side.unwrap());
+
+        // ContractError::ChangeToTheSameSide
+        let info = mock_info("user", &[]);
+        let msg = ExecuteMsg::ChangeSide { side: 1 };
+        assert!(matches!(
+            execute(deps.as_mut(), env, info, msg),
+            Err(ContractError::ChangeToTheSameSide {})
+        ));
     }
 
     #[test]

@@ -51,7 +51,7 @@ pub fn vote(
     VOTES.update(deps.storage, &info.sender, |exists| -> StdResult<u64> {
         match exists {
             None => Ok(side),
-            Some(_) => Ok(side),
+            Some(_) => panic!("Cannot reach here"),
         }
     })?;
 
@@ -59,6 +59,74 @@ pub fn vote(
     let mut state = read_state(deps.storage)?;
     state.total_amount += Uint128::from(1u8);
     store_state(deps.storage, &state)?;
+
+    Ok(Response::new().add_attributes(vec![
+        ("action", "try_bet"),
+        ("address", info.sender.as_str()),
+        ("side", &side.to_string()),
+    ]))
+}
+
+pub fn change_side(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    side: u64,
+) -> Result<Response, ContractError> {
+    let config = read_config(deps.storage)?;
+
+    // current block time is less than start time or larger than bet end time
+    if env.block.time >= Timestamp::from_seconds(config.bet_end_time) {
+        return Err(ContractError::VoteIsNotLive(
+            env.block.time,
+            config.bet_end_time,
+        ));
+    }
+
+    // Check if already participated
+    if !VOTES.has(deps.storage, &info.sender) {
+        return Err(ContractError::NotParticipated {});
+    }
+
+    // Check if some funds are sent
+    if !info.funds.is_empty() {
+        return Err(ContractError::NotEmptyFunds {});
+    }
+
+    let original_side = VOTES.load(deps.storage, &info.sender)?;
+
+    if original_side == side {
+        return Err(ContractError::ChangeToTheSameSide {});
+    }
+
+    SIDES.update(
+        deps.storage,
+        &side.to_be_bytes(),
+        |exists| -> StdResult<u64> {
+            match exists {
+                Some(count) => Ok(count + 1),
+                None => Ok(1),
+            }
+        },
+    )?;
+
+    SIDES.update(
+        deps.storage,
+        &original_side.to_be_bytes(),
+        |exists| -> StdResult<u64> {
+            match exists {
+                Some(count) => Ok(count - 1),
+                None => panic!("Cannot reach here"),
+            }
+        },
+    )?;
+
+    VOTES.update(deps.storage, &info.sender, |exists| -> StdResult<u64> {
+        match exists {
+            Some(_) => Ok(side),
+            None => panic!("Cannot reach here"),
+        }
+    })?;
 
     Ok(Response::new().add_attributes(vec![
         ("action", "try_bet"),

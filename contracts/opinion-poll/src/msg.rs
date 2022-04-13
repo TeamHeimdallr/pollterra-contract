@@ -14,6 +14,7 @@ pub type InstantiateMsg = PollInstantiateMsg;
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     Vote { side: u64 },
+    ChangeSide { side: u64 },
     FinishPoll {},
     ReclaimDeposit {},
     TransferOwner { new_owner: String },

@@ -60,6 +60,7 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Vote { side } => executions::vote(deps, _env, info, side),
+        ExecuteMsg::ChangeSide { side } => executions::change_side(deps, _env, info, side),
         ExecuteMsg::FinishPoll {} => executions::finish_poll(deps, _env, info),
         ExecuteMsg::ReclaimDeposit {} => executions::reclaim_deposit(deps),
         ExecuteMsg::TransferOwner { new_owner } => {
