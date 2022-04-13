@@ -59,37 +59,21 @@ pub fn try_bet(
         ));
     }
 
-    // add bet amount to BETS state (accumulate single side)
-    BETS.update(
-        deps.storage,
-        (&side.to_be_bytes(), &addr),
-        |exists| -> StdResult<Uint128> {
-            match exists {
-                Some(bet) => Ok(bet + sent),
-                None => Ok(sent),
-            }
-        },
-    )?;
-
-    // add bet amount to USER_TOTAL_AMOUNT state (accumulate both side)
-    USER_TOTAL_AMOUNT.update(deps.storage, &addr, |exists| -> StdResult<Uint128> {
+    let update_action = |exists: Option<Uint128>| -> StdResult<Uint128> {
         match exists {
             Some(bet) => Ok(bet + sent),
             None => Ok(sent),
         }
-    })?;
+    };
+
+    // add bet amount to BETS state (accumulate single side)
+    BETS.update(deps.storage, (&side.to_be_bytes(), &addr), update_action)?;
+
+    // add bet amount to USER_TOTAL_AMOUNT state (accumulate both side)
+    USER_TOTAL_AMOUNT.update(deps.storage, &addr, update_action)?;
 
     // add bet amount to SIDE_TOTAL_AMOUNT state (accumulate single side, every user)
-    SIDE_TOTAL_AMOUNT.update(
-        deps.storage,
-        &side.to_be_bytes(),
-        |exists| -> StdResult<Uint128> {
-            match exists {
-                Some(bet) => Ok(bet + sent),
-                None => Ok(sent),
-            }
-        },
-    )?;
+    SIDE_TOTAL_AMOUNT.update(deps.storage, &side.to_be_bytes(), update_action)?;
 
     // Save the new state
     let mut state = read_state(deps.storage)?;
