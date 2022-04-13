@@ -15,6 +15,12 @@ pub enum ContractError {
     #[error("Already participated")]
     AlreadyParticipated {},
 
+    #[error("Not participated yet")]
+    NotParticipated {},
+
+    #[error("Cannot change to the same side")]
+    ChangeToTheSameSide {},
+
     #[error("You'd better not send funds")]
     NotEmptyFunds {},
 

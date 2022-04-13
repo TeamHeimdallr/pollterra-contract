@@ -27,6 +27,28 @@
     {
       "type": "object",
       "required": [
+        "change_side"
+      ],
+      "properties": {
+        "change_side": {
+          "type": "object",
+          "required": [
+            "side"
+          ],
+          "properties": {
+            "side": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "finish_poll"
       ],
       "properties": {
