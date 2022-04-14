@@ -5,5 +5,3 @@ mod queries;
 
 #[cfg(test)]
 mod tests;
-
-pub use crate::error::ContractError;
