@@ -4,11 +4,11 @@ use crate::entrypoints::{execute, query};
 use messages::governance::execute_msgs::ExecuteMsg;
 use messages::governance::query_msgs::QueryMsg;
 
+use crate::error::ContractError;
 use crate::tests::common::{
     DEFAULT_PROPOSAL_DEPOSIT, DEFAULT_VOTING_PERIOD, TEST_CREATOR, TEST_VOTER, VOTING_TOKEN,
 };
 use crate::tests::{common, instantiate, poll};
-use crate::ContractError;
 use cosmwasm_std::testing::{mock_env, mock_info, MOCK_CONTRACT_ADDR};
 use cosmwasm_std::{
     coins, from_binary, to_binary, Api, CanonicalAddr, CosmosMsg, SubMsg, Uint128, WasmMsg,

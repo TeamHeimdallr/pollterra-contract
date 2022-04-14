@@ -9,12 +9,12 @@ use terraswap::querier::query_token_balance;
 use testutils::mock_querier::mock_dependencies;
 
 use crate::entrypoints::{execute, query};
+use crate::error::ContractError;
 use crate::tests::common::{
     mock_env_height, DEFAULT_EXPIRATION_PERIOD, DEFAULT_PROPOSAL_DEPOSIT, DEFAULT_TIMELOCK_PERIOD,
     DEFAULT_VOTING_PERIOD, TEST_CREATOR, TEST_VOTER, TEST_VOTER_2, TEST_VOTER_3, VOTING_TOKEN,
 };
 use crate::tests::{common, instantiate};
-use crate::ContractError;
 use messages::governance::execute_msgs::ExecuteMsg;
 use messages::governance::query_msgs::QueryMsg;
 use messages::governance::state::{

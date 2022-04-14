@@ -6,7 +6,7 @@ use crate::entrypoints::{
     MAX_DESC_LENGTH, MAX_LINK_LENGTH, MAX_QUORUM, MAX_THRESHOLD, MAX_TITLE_LENGTH, MIN_DESC_LENGTH,
     MIN_LINK_LENGTH, MIN_TITLE_LENGTH,
 };
-use crate::ContractError;
+use crate::error::ContractError;
 
 /**
  * Validates that the provided [Decimal] value is in between [0,max_value].

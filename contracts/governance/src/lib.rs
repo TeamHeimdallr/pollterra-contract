@@ -9,5 +9,3 @@ mod staking;
 #[cfg(test)]
 mod tests;
 mod validators;
-
-pub use crate::error::ContractError;
