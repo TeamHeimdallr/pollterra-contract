@@ -58,6 +58,7 @@ dependencies = [
  "cw-storage-plus",
  "cw2",
  "cw20",
+ "messages",
  "schemars",
  "serde",
  "testutils",
@@ -524,6 +525,8 @@ version = "0.1.0"
 dependencies = [
  "config",
  "cosmwasm-std",
+ "cw-storage-plus",
+ "cw20",
  "schemars",
  "serde",
 ]

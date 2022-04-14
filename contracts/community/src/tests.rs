@@ -8,8 +8,8 @@ mod community_tests {
 
     use crate::entrypoints;
     use crate::error::ContractError;
-    use crate::msg::{ExecuteMsg, InstantiateMsg};
-    use crate::query_msgs::{AllowanceResponse, ContractConfigResponse, QueryMsg};
+    use messages::community::execute_msgs::{ExecuteMsg, InstantiateMsg};
+    use messages::community::query_msgs::{AllowanceResponse, ContractConfigResponse, QueryMsg};
 
     const POLLTERRA_TOKEN: &str = "pollterra_token";
     const CREATOR: &str = "creator";
