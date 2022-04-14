@@ -1,23 +1,47 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "ContractState",
+  "title": "DistributionResponse",
   "type": "object",
   "required": [
+    "amount",
+    "distributable_amount",
     "distributed_amount",
-    "distribution_count",
-    "locked_amount"
+    "end_height",
+    "id",
+    "recipient",
+    "released_amount",
+    "start_height"
   ],
   "properties": {
+    "amount": {
+      "$ref": "#/definitions/Uint128"
+    },
+    "distributable_amount": {
+      "$ref": "#/definitions/Uint128"
+    },
     "distributed_amount": {
       "$ref": "#/definitions/Uint128"
     },
-    "distribution_count": {
+    "end_height": {
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
     },
-    "locked_amount": {
+    "id": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "recipient": {
+      "type": "string"
+    },
+    "released_amount": {
       "$ref": "#/definitions/Uint128"
+    },
+    "start_height": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
     }
   },
   "definitions": {

@@ -299,6 +299,7 @@ dependencies = [
  "cw-storage-plus",
  "cw2",
  "cw20",
+ "messages",
  "schemars",
  "serde",
  "testutils",

@@ -7,10 +7,10 @@ use cosmwasm_std::{
 };
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg};
-use crate::query_msgs::QueryMsg;
 use crate::state::{ContractConfig, ContractState};
 use crate::{executions, queries};
+use messages::distributor::execute_msgs::{ExecuteMsg, InstantiateMsg, MigrateMsg};
+use messages::distributor::query_msgs::QueryMsg;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:distributor";
