@@ -3,12 +3,13 @@ mod prediction_poll_tests {
     use crate::entrypoints::{execute, instantiate, query};
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info, MOCK_CONTRACT_ADDR};
 
-    use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, UserBetResponse, UserRewardsResponse};
-    use crate::state::{Config, State};
     use config::config::PollType;
     use cosmwasm_std::{
         coins, from_binary, Addr, BankMsg, Coin, CosmosMsg, Decimal, Timestamp, Uint128,
     };
+    use messages::prediction_poll::execute_msgs::{ExecuteMsg, InstantiateMsg};
+    use messages::prediction_poll::query_msgs::{QueryMsg, UserBetResponse, UserRewardsResponse};
+    use messages::prediction_poll::state::{Config, State};
 
     const DENOM: &str = "uusd";
     const DEFAULT_MINIMUM_BET: Uint128 = Uint128::new(1_000);

@@ -1,4 +1,4 @@
-use crate::contract::{
+use crate::entrypoints::{
     MAX_DESC_LENGTH, MAX_LINK_LENGTH, MAX_TITLE_LENGTH, MIN_DESC_LENGTH, MIN_LINK_LENGTH,
     MIN_TITLE_LENGTH,
 };

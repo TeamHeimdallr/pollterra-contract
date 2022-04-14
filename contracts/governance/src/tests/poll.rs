@@ -8,18 +8,19 @@ use terraswap::querier::query_token_balance;
 
 use testutils::mock_querier::mock_dependencies;
 
-use crate::contract::{execute, query};
-use crate::msg::{ExecuteMsg, QueryMsg};
-use crate::state::{
-    bank_read, poll_voter_read, state_read, Cw20HookMsg, OrderBy, PollExecuteMsg, PollResponse,
-    PollStatus, PollsResponse, StakerResponse, State, VoteOption, VoterInfo, VotersResponse,
-};
+use crate::entrypoints::{execute, query};
 use crate::tests::common::{
     mock_env_height, DEFAULT_EXPIRATION_PERIOD, DEFAULT_PROPOSAL_DEPOSIT, DEFAULT_TIMELOCK_PERIOD,
     DEFAULT_VOTING_PERIOD, TEST_CREATOR, TEST_VOTER, TEST_VOTER_2, TEST_VOTER_3, VOTING_TOKEN,
 };
 use crate::tests::{common, instantiate};
 use crate::ContractError;
+use messages::governance::execute_msgs::ExecuteMsg;
+use messages::governance::query_msgs::QueryMsg;
+use messages::governance::state::{
+    bank_read, poll_voter_read, state_read, Cw20HookMsg, OrderBy, PollExecuteMsg, PollResponse,
+    PollStatus, PollsResponse, StakerResponse, State, VoteOption, VoterInfo, VotersResponse,
+};
 
 pub fn mock_register_voting_token(deps: DepsMut) {
     let info = mock_info(TEST_CREATOR, &[]);

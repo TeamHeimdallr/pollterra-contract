@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cw20HookMsg",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "init_poll"
+      ],
+      "properties": {
+        "init_poll": {
+          "type": "object",
+          "required": [
+            "bet_end_time",
+            "code_id",
+            "poll_name",
+            "poll_type",
+            "resolution_time"
+          ],
+          "properties": {
+            "bet_end_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "code_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "poll_admin": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "poll_name": {
+              "type": "string"
+            },
+            "poll_type": {
+              "type": "string"
+            },
+            "resolution_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

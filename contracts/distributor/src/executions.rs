@@ -6,7 +6,7 @@ use cw20::Cw20ExecuteMsg;
 
 use crate::error::ContractError;
 use crate::state::{ContractConfig, ContractState, Distribution};
-use crate::utils;
+use messages::utils;
 
 pub fn update_admins(
     deps: DepsMut,

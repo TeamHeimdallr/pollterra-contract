@@ -1,22 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "ContractState",
+  "title": "UserRewardsResponse",
   "type": "object",
   "required": [
-    "distributed_amount",
-    "distribution_count",
-    "locked_amount"
+    "reward"
   ],
   "properties": {
-    "distributed_amount": {
-      "$ref": "#/definitions/Uint128"
-    },
-    "distribution_count": {
-      "type": "integer",
-      "format": "uint64",
-      "minimum": 0.0
-    },
-    "locked_amount": {
+    "reward": {
       "$ref": "#/definitions/Uint128"
     }
   },

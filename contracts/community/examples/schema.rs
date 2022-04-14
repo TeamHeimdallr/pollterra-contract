@@ -3,8 +3,8 @@ use std::fs::create_dir_all;
 
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
-use community::msg::{ExecuteMsg, InstantiateMsg};
-use community::query_msgs::QueryMsg;
+use messages::community::execute_msgs::*;
+use messages::community::query_msgs::*;
 
 fn main() {
     let mut out_dir = current_dir().unwrap();
@@ -14,5 +14,11 @@ fn main() {
 
     export_schema(&schema_for!(InstantiateMsg), &out_dir);
     export_schema(&schema_for!(ExecuteMsg), &out_dir);
+    export_schema(&schema_for!(MigrateMsg), &out_dir);
+
     export_schema(&schema_for!(QueryMsg), &out_dir);
+    export_schema(&schema_for!(ContractConfigResponse), &out_dir);
+    export_schema(&schema_for!(BalanceResponse), &out_dir);
+    export_schema(&schema_for!(AllowanceResponse), &out_dir);
+    export_schema(&schema_for!(AllowancesResponse), &out_dir);
 }

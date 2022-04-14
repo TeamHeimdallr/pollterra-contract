@@ -1,11 +1,13 @@
 use crate::error::ContractError;
-use crate::msg::{Cw20HookMsg, OpinionPollExecuteMsg, PredictionPollExecuteMsg};
-use crate::state::Config;
 use config::config::PollType;
 use cosmwasm_std::{
     from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Response,
     StdResult, SubMsg, Uint128, WasmMsg,
 };
+use messages::meta_contract::execute_msgs::{
+    Cw20HookMsg, OpinionPollExecuteMsg, PredictionPollExecuteMsg,
+};
+use messages::meta_contract::state::Config;
 
 use cw20::Cw20ReceiveMsg;
 

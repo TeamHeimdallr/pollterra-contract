@@ -1,7 +1,7 @@
-use crate::query_msgs::{AllowanceResponse, AllowancesResponse, BalanceResponse};
-use crate::utils::{addr_range_option, query_cw20_balance, OrderBy};
 use cosmwasm_std::{Addr, Env, QuerierWrapper, StdResult, Storage, Uint128};
 use cw_storage_plus::{Item, Map};
+use messages::community::query_msgs::{AllowanceResponse, AllowancesResponse, BalanceResponse};
+use messages::utils::{addr_range_option, query_cw20_balance, OrderBy};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

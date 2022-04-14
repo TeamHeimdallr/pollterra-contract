@@ -1,10 +1,10 @@
 use cosmwasm_std::{Deps, Env, StdResult, Timestamp, Uint128};
 
-use crate::msg::{
+use messages::prediction_poll::query_msgs::{
     BetLiveResponse, BetStatusResponse, ConfigResponse, RewardLiveResponse, StateResponse,
     UserBetResponse, UserRewardsResponse,
 };
-use crate::state::{read_config, read_state, BetStatus, BETS, REWARDS};
+use messages::prediction_poll::state::{read_config, read_state, BetStatus, BETS, REWARDS};
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = read_config(deps.storage)?;

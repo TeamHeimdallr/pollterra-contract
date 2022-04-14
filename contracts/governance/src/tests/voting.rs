@@ -1,12 +1,9 @@
 use testutils::mock_querier::mock_dependencies;
 
-use crate::contract::{execute, query};
-use crate::msg::{ExecuteMsg, QueryMsg};
-use crate::state::{
-    bank_read, bank_store, poll_store, poll_voter_read, poll_voter_store, state_read, Cw20HookMsg,
-    OrderBy, Poll, PollStatus, StakerResponse, State, TokenManager, VoteOption, VoterInfo,
-    VotersResponse, VotersResponseItem,
-};
+use crate::entrypoints::{execute, query};
+use messages::governance::execute_msgs::ExecuteMsg;
+use messages::governance::query_msgs::QueryMsg;
+
 use crate::tests::common::{
     DEFAULT_PROPOSAL_DEPOSIT, DEFAULT_VOTING_PERIOD, TEST_CREATOR, TEST_VOTER, VOTING_TOKEN,
 };
@@ -17,6 +14,11 @@ use cosmwasm_std::{
     coins, from_binary, to_binary, Api, CanonicalAddr, CosmosMsg, SubMsg, Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
+use messages::governance::state::{
+    bank_read, bank_store, poll_store, poll_voter_read, poll_voter_store, state_read, Cw20HookMsg,
+    OrderBy, Poll, PollStatus, StakerResponse, State, TokenManager, VoteOption, VoterInfo,
+    VotersResponse, VotersResponseItem,
+};
 
 #[test]
 fn fails_cast_vote_not_enough_staked() {

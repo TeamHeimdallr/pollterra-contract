@@ -2,8 +2,8 @@ use cosmwasm_std::{Deps, Order, StdResult};
 #[cfg(not(feature = "library"))]
 use std::str;
 
-use crate::msg::{ConfigResponse, ContractsResponse, StateResponse};
-use crate::state::{Config, State, CONTRACTS};
+use messages::meta_contract::query_msgs::{ConfigResponse, ContractsResponse, StateResponse};
+use messages::meta_contract::state::{Config, State, CONTRACTS};
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = Config::load(deps.storage)?;

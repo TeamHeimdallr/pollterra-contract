@@ -1,10 +1,11 @@
 use cosmwasm_std::{Deps, Env};
 
 use crate::error::ContractError;
-use crate::query_msgs::{
+
+use messages::community::query_msgs::{
     AllowanceResponse, AllowancesResponse, BalanceResponse, ContractConfigResponse,
 };
-use crate::utils::OrderBy;
+use messages::utils::OrderBy;
 
 use crate::state::{Allowance, ContractConfig, ContractState};
 

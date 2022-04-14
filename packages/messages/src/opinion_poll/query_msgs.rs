@@ -1,24 +1,8 @@
-use crate::state::{Config, State};
-use messages::msg::PollInstantiateMsg;
+use super::state::{Config, State};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use config::config::PollStatus;
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct MigrateMsg {}
-
-pub type InstantiateMsg = PollInstantiateMsg;
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum ExecuteMsg {
-    Vote { side: u64 },
-    ChangeSide { side: u64 },
-    FinishPoll {},
-    ReclaimDeposit {},
-    TransferOwner { new_owner: String },
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]

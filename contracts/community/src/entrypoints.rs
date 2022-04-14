@@ -6,9 +6,9 @@ use cosmwasm_std::{
 use cw2::set_contract_version;
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg};
-use crate::query_msgs::QueryMsg;
 use crate::state::{ContractConfig, ContractState};
+use messages::community::execute_msgs::{ExecuteMsg, InstantiateMsg, MigrateMsg};
+use messages::community::query_msgs::QueryMsg;
 
 use crate::executions;
 use crate::queries;

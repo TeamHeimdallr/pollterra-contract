@@ -4,13 +4,15 @@ use cw20::Cw20ReceiveMsg;
 
 use testutils::mock_querier::mock_dependencies;
 
-use crate::contract::{execute, query};
-use crate::msg::{ExecuteMsg, QueryMsg};
+use crate::entrypoints::{execute, query};
+use messages::governance::execute_msgs::ExecuteMsg;
+use messages::governance::query_msgs::QueryMsg;
+
 use crate::staking::stake_voting_tokens;
-use crate::state::{Cw20HookMsg, StakerResponse};
 use crate::tests::common::{TEST_VOTER, VOTING_TOKEN};
 use crate::tests::{instantiate, poll};
 use crate::ContractError;
+use messages::governance::state::{Cw20HookMsg, StakerResponse};
 
 #[test]
 fn share_calculation() {

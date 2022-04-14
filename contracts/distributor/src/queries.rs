@@ -1,11 +1,11 @@
 use cosmwasm_std::{Deps, Env, Uint128};
 
 use crate::error::ContractError;
-use crate::query_msgs::{
+use crate::state::{ContractConfig, ContractState, Distribution};
+use messages::distributor::query_msgs::{
     ContractConfigResponse, DistributionResponse, DistributionsResponse, StateResponse,
 };
-use crate::state::{ContractConfig, ContractState, Distribution};
-use crate::utils::query_cw20_balance;
+use messages::utils::query_cw20_balance;
 
 pub fn get_config(deps: Deps, _env: Env) -> Result<ContractConfigResponse, ContractError> {
     let config = ContractConfig::load(deps.storage)?;
