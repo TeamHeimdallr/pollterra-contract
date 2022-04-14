@@ -3,17 +3,13 @@ use cosmwasm_std::{
     to_binary, BankMsg, Coin, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Order, Response,
     StdResult, Timestamp, Uint128, WasmMsg,
 };
-use cw2::set_contract_version;
 use cw20::Cw20ExecuteMsg;
 use std::str;
 
 use crate::state::{
     read_config, read_state, store_config, store_state, BetStatus, BETS, REWARDS,
-    SIDE_TOTAL_AMOUNT, STATE, USER_TOTAL_AMOUNT,
+    SIDE_TOTAL_AMOUNT, USER_TOTAL_AMOUNT,
 };
-// version info for migration info
-const CONTRACT_NAME: &str = "crates.io:prediction-contract";
-const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const DENOM: &str = "uusd";
 
@@ -117,43 +113,66 @@ pub fn try_finish_poll(
         None => Uint128::new(0),
     };
 
-    let mut remain_amount = state.total_amount;
+    let mut total_rewards = Uint128::zero();
 
-    if !winner_amount.is_zero() {
-        let odds = Decimal::from_ratio(state.total_amount, winner_amount);
+    // Give it all back when no winner
+    if winner_amount.is_zero() {
+        let all: StdResult<Vec<_>> = BETS
+            .range(deps.storage, None, None, Order::Ascending)
+            .map(|item| {
+                let (addr, bet_amount) = item?;
+                Ok((addr, bet_amount))
+            })
+            .collect();
 
-        // iterate over them all
+        for (addr, bet_amount) in all?.iter() {
+            REWARDS.update(
+                deps.storage,
+                &deps.api.addr_validate(str::from_utf8(addr)?)?,
+                |exists| -> StdResult<Uint128> {
+                    match exists {
+                        Some(exist) => Ok(exist + bet_amount),
+                        None => Ok(*bet_amount),
+                    }
+                },
+            )?;
+            total_rewards += bet_amount;
+        }
+    } else {
+        let total_amount_deducted = (state.total_amount - winner_amount)
+            * (Decimal::percent(100_u64) - config.tax_percentage)
+            + winner_amount;
+        let odds = Decimal::from_ratio(total_amount_deducted, winner_amount);
+
         let all: StdResult<Vec<_>> = BETS
             .prefix(&winner.to_be_bytes())
             .range(deps.storage, None, None, Order::Ascending)
             .map(|item| {
-                let (addr, reward) = item?;
-                Ok((addr, reward))
+                let (addr, bet_amount) = item?;
+                Ok((addr, bet_amount))
             })
             .collect();
 
-        let mut total_rewards = Uint128::zero();
-        for (addr, reward) in all?.iter() {
+        for (addr, bet_amount) in all?.iter() {
+            let reward = *bet_amount * odds;
             REWARDS.update(
                 deps.storage,
                 &deps.api.addr_validate(str::from_utf8(addr)?)?,
-                |_exists| -> StdResult<Uint128> {
-                    let reward =
-                        ((*reward) * odds) * (Decimal::percent(100_u64) - config.tax_percentage); // fee
-                    total_rewards += reward;
-                    Ok(reward)
-                },
+                |_exists| -> StdResult<Uint128> { Ok(reward) },
             )?;
+            total_rewards += reward;
         }
-        remain_amount -= total_rewards;
     }
 
     // transfer remain amount to contract owner
+    let contract_balance = deps
+        .querier
+        .query_balance(env.contract.address, DENOM.to_string())?;
     let transfer_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
         to_address: config.owner.to_string(),
         amount: vec![Coin {
             denom: DENOM.to_string(),
-            amount: remain_amount,
+            amount: contract_balance.amount - total_rewards,
         }],
     });
 
@@ -175,7 +194,6 @@ pub fn try_finish_poll(
     state.deposit_reclaimed = true;
     store_state(deps.storage, &state)?;
 
-    // TODO : get n% of rewards as a tax here or in try_bet
     Ok(Response::new()
         .add_attribute("method", "try_finish_poll")
         .add_message(CosmosMsg::Wasm(WasmMsg::Execute {
@@ -226,9 +244,6 @@ pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> Result<Response, Con
 
     // update bet status
     state.status = BetStatus::Closed;
-
-    // TODO? USER_TOTAL_AMOUNT reset? not necessary
-
     store_state(deps.storage, &state)?;
 
     Ok(Response::new()
@@ -294,75 +309,6 @@ pub fn try_reclaim_deposit(deps: DepsMut) -> Result<Response, ContractError> {
             })?,
             funds: vec![],
         })))
-}
-
-// TODO : remove this and create a function named wrap_up_poll
-pub fn try_reset_poll(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-    _poll_name: String,
-    _bet_end_time: u64,
-) -> Result<Response, ContractError> {
-    let config = read_config(deps.storage)?;
-    let mut state = read_state(deps.storage)?;
-    if info.sender != config.owner {
-        return Err(ContractError::Unauthorized {});
-    }
-    let bet_status = state.status.clone();
-    if bet_status != BetStatus::Reward && bet_status != BetStatus::Closed {
-        return Err(ContractError::ResetBeforeClosed {});
-    }
-
-    // To return all the rewards
-    let mut reward_msgs: Vec<CosmosMsg> = vec![];
-    REWARDS
-        .range(deps.storage, None, None, Order::Ascending)
-        .for_each(|item| {
-            if let Ok((addr, reward)) = item {
-                let addr = str::from_utf8(&addr).unwrap_or("").to_string();
-                if addr != String::default() {
-                    reward_msgs.push(CosmosMsg::Bank(BankMsg::Send {
-                        to_address: addr,
-                        amount: vec![Coin {
-                            denom: DENOM.to_string(),
-                            amount: reward,
-                        }],
-                    }));
-                }
-            }
-        });
-
-    // Withdrawal
-    let contract_balance = deps.querier.query_balance(&env.contract.address, DENOM)?;
-    let withdrawal_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
-        to_address: config.owner.to_string(),
-        amount: vec![Coin {
-            denom: DENOM.to_string(),
-            amount: contract_balance.amount,
-        }],
-    });
-
-    // Clear all the states
-    let keys: Vec<_> = deps
-        .storage
-        .range(None, None, Order::Ascending)
-        .map(|(k, _)| k)
-        .collect();
-    for k in keys {
-        deps.storage.remove(&k);
-    }
-
-    state.status = BetStatus::Voting;
-    state.total_amount = Uint128::zero();
-
-    STATE.save(deps.storage, &state)?;
-    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-
-    Ok(Response::new()
-        .add_attribute("method", "try_reset_poll")
-        .add_messages(reward_msgs)
-        .add_message(withdrawal_msg))
 }
 
 // TODO : create update_config function

@@ -62,10 +62,6 @@ pub fn execute(
         ExecuteMsg::FinishPoll { winner } => executions::try_finish_poll(deps, _env, info, winner),
         ExecuteMsg::RevertPoll {} => executions::try_revert_poll(deps, info),
         ExecuteMsg::Claim {} => executions::try_claim(deps, info),
-        ExecuteMsg::ResetPoll {
-            poll_name,
-            bet_end_time,
-        } => executions::try_reset_poll(deps, _env, info, poll_name, bet_end_time),
         ExecuteMsg::ReclaimDeposit {} => executions::try_reclaim_deposit(deps),
         ExecuteMsg::TransferOwner { new_owner } => {
             executions::try_transfer_owner(deps, info, new_owner)
