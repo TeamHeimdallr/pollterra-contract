@@ -1,10 +1,10 @@
 use cosmwasm_std::{Deps, Env, StdResult, Timestamp};
 
-use crate::msg::{
+use messages::opinion_poll::query_msgs::{
     ConfigResponse, PollStatusResponse, StateResponse, UserVoteResponse, VoteCountResponse,
     VoteLiveResponse,
 };
-use crate::state::{read_config, read_state, SIDES, VOTES};
+use messages::opinion_poll::state::{read_config, read_state, SIDES, VOTES};
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = read_config(deps.storage)?;

@@ -7,7 +7,9 @@ use cw20::Cw20ExecuteMsg;
 use std::cmp::Ordering;
 use std::convert::TryInto;
 
-use crate::state::{read_config, read_state, store_config, store_state, BetStatus, SIDES, VOTES};
+use messages::opinion_poll::state::{
+    read_config, read_state, store_config, store_state, BetStatus, SIDES, VOTES,
+};
 
 pub fn vote(
     deps: DepsMut,

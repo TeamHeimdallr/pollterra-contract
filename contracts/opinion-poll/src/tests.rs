@@ -4,10 +4,11 @@ mod prediction_poll_tests {
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
 
     use crate::error::ContractError;
-    use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, UserVoteResponse};
-    use crate::state::{Config, State};
     use config::config::PollType;
     use cosmwasm_std::{from_binary, Addr, Timestamp, Uint128};
+    use messages::opinion_poll::execute_msgs::{ExecuteMsg, InstantiateMsg};
+    use messages::opinion_poll::query_msgs::{QueryMsg, UserVoteResponse};
+    use messages::opinion_poll::state::{Config, State};
 
     const DEFAULT_RECLAIMABLE_THRESHOLD: Uint128 = Uint128::new(100);
     const DEPOSIT_AMOUNT: Uint128 = Uint128::new(1_000);
