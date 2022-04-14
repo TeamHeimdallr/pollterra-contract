@@ -6,7 +6,6 @@ use cosmwasm_storage::{
     bucket, bucket_read, singleton, singleton_read, Bucket, ReadonlyBucket, ReadonlySingleton,
     Singleton,
 };
-use cw_storage_plus::Item;
 use std::fmt;
 
 use std::cmp::Ordering;
@@ -65,8 +64,6 @@ pub struct State {
     pub total_share: Uint128,
     pub total_deposit: Uint128,
 }
-
-pub const STATE: Item<State> = Item::new("state");
 
 // State related to Poll Execution
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

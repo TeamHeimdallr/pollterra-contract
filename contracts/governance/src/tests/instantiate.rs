@@ -4,7 +4,7 @@ use cosmwasm_std::{Api, CanonicalAddr, Decimal, Uint128};
 
 use testutils::mock_querier::mock_dependencies;
 
-use crate::contract::{execute, instantiate, query};
+use crate::entrypoints::{execute, instantiate, query};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{config_read, state_read, Config, ConfigResponse, State};
 use crate::tests::common::{

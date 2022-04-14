@@ -4,7 +4,7 @@ use cw20::Cw20ReceiveMsg;
 
 use testutils::mock_querier::mock_dependencies;
 
-use crate::contract::{execute, query};
+use crate::entrypoints::{execute, query};
 use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::staking::stake_voting_tokens;
 use crate::state::{Cw20HookMsg, StakerResponse};

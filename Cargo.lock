@@ -428,6 +428,7 @@ dependencies = [
  "cw-storage-plus",
  "cw20",
  "cw20-base",
+ "messages",
  "schemars",
  "serde",
  "terra-cosmwasm",

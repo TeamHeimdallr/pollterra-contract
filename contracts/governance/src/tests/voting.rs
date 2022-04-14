@@ -1,6 +1,6 @@
 use testutils::mock_querier::mock_dependencies;
 
-use crate::contract::{execute, query};
+use crate::entrypoints::{execute, query};
 use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::state::{
     bank_read, bank_store, poll_store, poll_voter_read, poll_voter_store, state_read, Cw20HookMsg,

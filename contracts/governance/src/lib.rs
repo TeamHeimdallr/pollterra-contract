@@ -1,12 +1,15 @@
-pub use crate::error::ContractError;
+pub mod entrypoints;
 
-pub mod contract;
 mod error;
-pub mod msg;
+mod executions;
+mod msg;
+mod queries;
 mod staking;
-pub mod state;
+mod state;
 
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(test)]
 mod tests;
 mod validators;
+
+pub use crate::error::ContractError;

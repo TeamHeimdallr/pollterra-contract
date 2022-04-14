@@ -8,7 +8,7 @@ use terraswap::querier::query_token_balance;
 
 use testutils::mock_querier::mock_dependencies;
 
-use crate::contract::{execute, query};
+use crate::entrypoints::{execute, query};
 use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::state::{
     bank_read, poll_voter_read, state_read, Cw20HookMsg, OrderBy, PollExecuteMsg, PollResponse,
