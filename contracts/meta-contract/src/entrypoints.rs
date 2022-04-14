@@ -8,9 +8,10 @@ use cw2::set_contract_version;
 use std::str;
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::state::{Config, State};
 use crate::{executions, queries, replies};
+use messages::meta_contract::execute_msgs::{ExecuteMsg, InstantiateMsg, MigrateMsg};
+use messages::meta_contract::query_msgs::QueryMsg;
+use messages::meta_contract::state::{Config, State};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:meta-contract";

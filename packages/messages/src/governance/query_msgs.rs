@@ -1,4 +1,4 @@
-use super::state::{OrderBy, PollStatus, VoteOption};
+use super::state::{OrderBy, PollStatus};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

@@ -1,5 +1,4 @@
-use crate::state::{Config, State};
-use cosmwasm_std::{Addr, Uint128};
+use cosmwasm_std::Uint128;
 use cw20::Cw20ReceiveMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -34,22 +33,6 @@ pub enum ExecuteMsg {
         reclaimable_threshold: Option<Uint128>,
         new_admins: Option<Vec<String>>,
     },
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum QueryMsg {
-    Config {},
-    State {},
-    GetContracts {},
-}
-
-pub type ConfigResponse = Config;
-pub type StateResponse = State;
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct ContractsResponse {
-    pub contracts: Vec<Addr>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

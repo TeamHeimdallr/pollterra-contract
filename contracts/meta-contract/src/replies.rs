@@ -7,7 +7,7 @@ use cw20::Cw20ExecuteMsg;
 use protobuf::Message;
 
 use crate::response::MsgInstantiateContractResponse;
-use crate::state::{Config, State, CONTRACTS};
+use messages::meta_contract::state::{Config, State, CONTRACTS};
 
 pub fn after_poll_init(deps: DepsMut, msg: Reply) -> Result<Response, ContractError> {
     let reply_result = msg.result.unwrap();

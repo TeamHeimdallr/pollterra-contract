@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OpinionPollExecuteMsg",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "finish_poll"
+      ],
+      "properties": {
+        "finish_poll": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}
