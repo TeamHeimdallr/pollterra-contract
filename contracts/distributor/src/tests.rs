@@ -2,7 +2,7 @@
 mod distributor_tests {
     use cosmwasm_std::testing::{mock_env, mock_info, MOCK_CONTRACT_ADDR};
     use cosmwasm_std::{
-        attr, from_binary, to_binary, CosmosMsg, DepsMut, SubMsg, Uint128, WasmMsg,
+        attr, from_binary, to_binary, Binary, CosmosMsg, DepsMut, SubMsg, Uint128, WasmMsg,
     };
     use cw20::Cw20ExecuteMsg;
 
@@ -418,6 +418,171 @@ mod distributor_tests {
         let msg = ExecuteMsg::Transfer {
             recipient: RECIPIENT_2.to_string(),
             amount: send_amount,
+        };
+
+        let info = mock_info(NOT_ADMIN, &[]);
+        assert!(matches!(
+            entrypoints::execute(deps.as_mut(), mock_env(), info, msg),
+            Err(ContractError::Unauthorized {})
+        ));
+    }
+
+    #[test]
+    fn proper_remove_distribution_message() {
+        let mut deps = mock_dependencies(&[]);
+        mock_instantiate(deps.as_mut());
+
+        deps.querier.with_token_balances(&[(
+            &POLLTERRA_TOKEN.to_string(),
+            &[(&MOCK_CONTRACT_ADDR.to_string(), &Uint128::from(20_000u128))],
+        )]);
+
+        let info = mock_info(ADMIN_0, &[]);
+        let start_height = 20000;
+        let end_height = 40000;
+        let amount = Uint128::new(10_000);
+
+        let distribution_msg: Option<Binary> = Some(
+            to_binary(&Cw20ExecuteMsg::Burn {
+                amount: Uint128::new(1),
+            })
+            .unwrap(),
+        );
+
+        // register distribution w/ message
+        let msg = ExecuteMsg::RegisterDistribution {
+            start_height,
+            end_height,
+            recipient: RECIPIENT.to_string(),
+            amount,
+            message: distribution_msg.clone(),
+        };
+        let res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg);
+        let distribution_id: u64 = res.unwrap().attributes[1].value.parse().unwrap();
+
+        // distribute w/ message
+        let msg = ExecuteMsg::Distribute {
+            id: Some(distribution_id),
+        };
+        let mut env = mock_env();
+        env.block.height = 30000;
+
+        let info = mock_info(ADMIN_0, &[]);
+        let res = entrypoints::execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+        assert_eq!(
+            &res.attributes,
+            &vec![
+                attr("action", "distribute"),
+                attr(
+                    "distribution",
+                    format!("{}/{}/{}", distribution_id, RECIPIENT, amount,)
+                )
+            ]
+        );
+        let distributed_1 =
+            amount.multiply_ratio(env.block.height - start_height, end_height - start_height);
+
+        let send_msg = CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: POLLTERRA_TOKEN.to_string(),
+            msg: to_binary(&Cw20ExecuteMsg::Send {
+                contract: RECIPIENT.to_string(),
+                amount: distributed_1,
+                msg: distribution_msg.unwrap().clone(),
+            })
+            .unwrap(),
+            funds: vec![],
+        });
+
+        assert_eq!(res.messages[0], SubMsg::new(send_msg));
+
+        // remove disdtribution message
+        let msg = ExecuteMsg::RemoveDistributionMessage {
+            id: distribution_id,
+        };
+
+        let info = mock_info(ADMIN_0, &[]);
+        let res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+        assert_eq!(
+            &res.attributes,
+            &vec![
+                attr("action", "remove_distribution_message"),
+                attr("is_updated_message", "true")
+            ]
+        );
+
+        // distribute after removing distribution messages
+        let msg = ExecuteMsg::Distribute {
+            id: Some(distribution_id),
+        };
+        let mut env = mock_env();
+        env.block.height = 40000;
+
+        let info = mock_info(ADMIN_0, &[]);
+        let res = entrypoints::execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+        assert_eq!(
+            &res.attributes,
+            &vec![
+                attr("action", "distribute"),
+                attr(
+                    "distribution",
+                    format!("{}/{}/{}", distribution_id, RECIPIENT, amount,)
+                )
+            ]
+        );
+        let distributed_2 = amount
+            .multiply_ratio(env.block.height - start_height, end_height - start_height)
+            - distributed_1;
+
+        let send_msg = CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: POLLTERRA_TOKEN.to_string(),
+            funds: vec![],
+            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+                recipient: RECIPIENT.to_string(),
+                amount: distributed_2,
+            })
+            .unwrap(),
+        });
+
+        assert_eq!(res.messages[0], SubMsg::new(send_msg));
+    }
+
+    #[test]
+    fn remove_distribution_message_failed_unauthorized() {
+        let mut deps = mock_dependencies(&[]);
+        mock_instantiate(deps.as_mut());
+
+        deps.querier.with_token_balances(&[(
+            &POLLTERRA_TOKEN.to_string(),
+            &[(&MOCK_CONTRACT_ADDR.to_string(), &Uint128::from(20_000u128))],
+        )]);
+
+        let info = mock_info(ADMIN_0, &[]);
+        let start_height = 20000;
+        let end_height = 40000;
+        let amount = Uint128::new(10_000);
+
+        let distribution_msg: Option<Binary> = Some(
+            to_binary(&Cw20ExecuteMsg::Burn {
+                amount: Uint128::new(1),
+            })
+            .unwrap(),
+        );
+
+        // register distribution w/ message
+        let msg = ExecuteMsg::RegisterDistribution {
+            start_height,
+            end_height,
+            recipient: RECIPIENT.to_string(),
+            amount,
+            message: distribution_msg.clone(),
+        };
+        let res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg);
+        let distribution_id: u64 = res.unwrap().attributes[1].value.parse().unwrap();
+
+        // remove disdtribution message
+        let msg = ExecuteMsg::RemoveDistributionMessage {
+            id: distribution_id,
         };
 
         let info = mock_info(NOT_ADMIN, &[]);
