@@ -70,19 +70,13 @@ mod community_tests {
         let mut deps = mock_dependencies(&[]);
         mock_instantiate(deps.as_mut());
 
-        let info = mock_info(ADMIN_0, &[]);
+        let info = mock_info(NON_ADMIN, &[]);
         let admins = Some(vec![ADMIN_0.to_string(), NEW_ADMIN.to_string()]);
         let msg = ExecuteMsg::UpdateAdmins { admins };
-        let _res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg);
-
-        let msg = QueryMsg::Config {};
-        let res: ContractConfigResponse =
-            from_binary(&entrypoints::query(deps.as_ref(), mock_env(), msg).unwrap()).unwrap();
-
-        assert_eq!(POLLTERRA_TOKEN, &res.managing_token);
-        assert_eq!(ADMIN_0, res.admins.get(0).unwrap());
-        assert_ne!(ADMIN_1, res.admins.get(1).unwrap());
-        assert_eq!(NEW_ADMIN, res.admins.get(1).unwrap());
+        assert!(matches!(
+            entrypoints::execute(deps.as_mut(), mock_env(), info, msg),
+            Err(ContractError::Unauthorized {})
+        ));
     }
 
     #[test]
