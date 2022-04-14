@@ -5,9 +5,10 @@ use cosmwasm_std::{
 use cw2::set_contract_version;
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::state::{store_config, store_state, BetStatus, Config, State};
 use crate::{executions, queries};
+use messages::prediction_poll::execute_msgs::{ExecuteMsg, InstantiateMsg, MigrateMsg};
+use messages::prediction_poll::query_msgs::QueryMsg;
+use messages::prediction_poll::state::{store_config, store_state, BetStatus, Config, State};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:prediction-poll";

@@ -6,7 +6,7 @@ use cosmwasm_std::{
 use cw20::Cw20ExecuteMsg;
 use std::str;
 
-use crate::state::{
+use messages::prediction_poll::state::{
     read_config, read_state, store_config, store_state, BetStatus, BETS, REWARDS,
     SIDE_TOTAL_AMOUNT, USER_TOTAL_AMOUNT,
 };
