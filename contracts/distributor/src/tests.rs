@@ -442,7 +442,7 @@ mod distributor_tests {
         let end_height = 40000;
         let amount = Uint128::new(10_000);
 
-        let distribution_msg: Option<Binary> = Some(
+        let attached_msg: Option<Binary> = Some(
             to_binary(&Cw20ExecuteMsg::Burn {
                 amount: Uint128::new(1),
             })
@@ -455,7 +455,7 @@ mod distributor_tests {
             end_height,
             recipient: RECIPIENT.to_string(),
             amount,
-            message: distribution_msg.clone(),
+            message: attached_msg.clone(),
         };
         let res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg);
         let distribution_id: u64 = res.unwrap().attributes[1].value.parse().unwrap();
@@ -488,7 +488,7 @@ mod distributor_tests {
             msg: to_binary(&Cw20ExecuteMsg::Send {
                 contract: RECIPIENT.to_string(),
                 amount: distributed_1,
-                msg: distribution_msg.unwrap(),
+                msg: attached_msg.unwrap(),
             })
             .unwrap(),
             funds: vec![],
@@ -562,7 +562,7 @@ mod distributor_tests {
         let end_height = 40000;
         let amount = Uint128::new(10_000);
 
-        let distribution_msg: Option<Binary> = Some(
+        let attached_msg: Option<Binary> = Some(
             to_binary(&Cw20ExecuteMsg::Burn {
                 amount: Uint128::new(1),
             })
@@ -575,7 +575,7 @@ mod distributor_tests {
             end_height,
             recipient: RECIPIENT.to_string(),
             amount,
-            message: distribution_msg,
+            message: attached_msg,
         };
         let res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg);
         let distribution_id: u64 = res.unwrap().attributes[1].value.parse().unwrap();
