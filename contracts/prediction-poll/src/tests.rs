@@ -172,7 +172,18 @@ mod prediction_poll_tests {
 
         let msg = ExecuteMsg::FinishPoll { winner: 0 };
         let info = mock_info("creator", &[]);
-        let _res = execute(deps.as_mut(), env, info, msg).unwrap();
+        let res = execute(deps.as_mut(), env, info, msg).unwrap();
+
+        assert_eq!(
+            res.messages[1].msg,
+            CosmosMsg::Bank(BankMsg::Send {
+                to_address: "creator".to_string(),
+                amount: vec![Coin {
+                    denom: DENOM.to_string(),
+                    amount: Uint128::new(20_000)
+                }],
+            })
+        );
 
         let res = query(
             deps.as_ref(),
@@ -183,7 +194,7 @@ mod prediction_poll_tests {
         )
         .unwrap();
         let value: UserRewardsResponse = from_binary(&res).unwrap();
-        assert_eq!(Uint128::new(2980000), value.reward);
+        assert_eq!(Uint128::new(2_980_000), value.reward);
     }
 
     #[test]

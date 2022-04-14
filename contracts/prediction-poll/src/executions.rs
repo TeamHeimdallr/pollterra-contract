@@ -120,23 +120,23 @@ pub fn try_finish_poll(
         let all: StdResult<Vec<_>> = BETS
             .range(deps.storage, None, None, Order::Ascending)
             .map(|item| {
-                let (addr, reward) = item?;
-                Ok((addr, reward))
+                let (addr, bet_amount) = item?;
+                Ok((addr, bet_amount))
             })
             .collect();
 
-        for (addr, reward) in all?.iter() {
+        for (addr, bet_amount) in all?.iter() {
             REWARDS.update(
                 deps.storage,
                 &deps.api.addr_validate(str::from_utf8(addr)?)?,
                 |exists| -> StdResult<Uint128> {
                     match exists {
-                        Some(exist) => Ok(exist + reward),
-                        None => Ok(*reward),
+                        Some(exist) => Ok(exist + bet_amount),
+                        None => Ok(*bet_amount),
                     }
                 },
             )?;
-            total_rewards += reward;
+            total_rewards += bet_amount;
         }
     } else {
         let total_amount_deducted = (state.total_amount - winner_amount)
@@ -148,16 +148,17 @@ pub fn try_finish_poll(
             .prefix(&winner.to_be_bytes())
             .range(deps.storage, None, None, Order::Ascending)
             .map(|item| {
-                let (addr, reward) = item?;
-                Ok((addr, reward))
+                let (addr, bet_amount) = item?;
+                Ok((addr, bet_amount))
             })
             .collect();
 
-        for (addr, reward) in all?.iter() {
+        for (addr, bet_amount) in all?.iter() {
+            let reward = *bet_amount * odds;
             REWARDS.update(
                 deps.storage,
                 &deps.api.addr_validate(str::from_utf8(addr)?)?,
-                |_exists| -> StdResult<Uint128> { Ok(*reward * odds) },
+                |_exists| -> StdResult<Uint128> { Ok(reward) },
             )?;
             total_rewards += reward;
         }
