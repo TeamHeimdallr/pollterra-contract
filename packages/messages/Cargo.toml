@@ -11,4 +11,5 @@ cosmwasm-std = { version = "0.16.2" }
 config = { path = "../../packages/config", version = "0.1.0" }
 cw-storage-plus = "0.8.0"
 cw20 = { version = "0.8.0-rc2" }
+cosmwasm-storage = { version = "0.16.0" }
 

@@ -8,14 +8,14 @@ use terraswap::querier::query_token_balance;
 
 use crate::error::ContractError;
 use crate::staking::stake_voting_tokens;
-use crate::state::{
-    bank_read, bank_store, config_read, config_store, poll_indexer_store, poll_store,
-    poll_voter_read, poll_voter_store, state_read, state_store, Config, Cw20HookMsg, ExecuteData,
-    Poll, PollExecuteMsg, PollStatus, State, VoteOption, VoterInfo,
-};
 use crate::validators::{
     validate_poll_description, validate_poll_link, validate_poll_period, validate_poll_title,
     validate_quorum, validate_threshold,
+};
+use messages::governance::state::{
+    bank_read, bank_store, config_read, config_store, poll_indexer_store, poll_store,
+    poll_voter_read, poll_voter_store, state_read, state_store, Config, Cw20HookMsg, ExecuteData,
+    Poll, PollExecuteMsg, PollStatus, State, VoteOption, VoterInfo,
 };
 
 pub fn register_contracts(

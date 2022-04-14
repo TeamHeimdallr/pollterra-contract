@@ -2,7 +2,7 @@
 use cosmwasm_std::{Deps, StdResult};
 
 use crate::error::ContractError;
-use crate::state::{
+use messages::governance::state::{
     config_read, poll_read, read_poll_voters, read_polls, state_read, Config, ConfigResponse,
     OrderBy, Poll, PollExecuteMsg, PollResponse, PollStatus, PollsResponse, State, StateResponse,
     VotersResponse, VotersResponseItem,

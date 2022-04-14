@@ -3,8 +3,11 @@ use std::fs::create_dir_all;
 
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
-use governance::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use governance::state::State;
+use messages::governance::execute_msgs::*;
+use messages::governance::query_msgs::*;
+use messages::governance::state::{
+    ConfigResponse, PollResponse, PollsResponse, StakerResponse, StateResponse, VotersResponse,
+};
 
 fn main() {
     let mut out_dir = current_dir().unwrap();
@@ -14,6 +17,14 @@ fn main() {
 
     export_schema(&schema_for!(InstantiateMsg), &out_dir);
     export_schema(&schema_for!(ExecuteMsg), &out_dir);
+    export_schema(&schema_for!(MigrateMsg), &out_dir);
+
     export_schema(&schema_for!(QueryMsg), &out_dir);
-    export_schema(&schema_for!(State), &out_dir);
+
+    export_schema(&schema_for!(ConfigResponse), &out_dir);
+    export_schema(&schema_for!(PollResponse), &out_dir);
+    export_schema(&schema_for!(PollsResponse), &out_dir);
+    export_schema(&schema_for!(StakerResponse), &out_dir);
+    export_schema(&schema_for!(StateResponse), &out_dir);
+    export_schema(&schema_for!(VotersResponse), &out_dir);
 }

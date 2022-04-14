@@ -5,10 +5,11 @@ use cosmwasm_std::{
 };
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::staking::{query_staker, withdraw_voting_tokens};
-use crate::state::{config_store, state_store, Config, State};
 use crate::validators::{validate_poll_period, validate_quorum, validate_threshold};
+use messages::governance::execute_msgs::{ExecuteMsg, InstantiateMsg, MigrateMsg};
+use messages::governance::query_msgs::QueryMsg;
+use messages::governance::state::{config_store, state_store, Config, State};
 
 pub(crate) const MAX_QUORUM: Decimal = Decimal::one();
 pub(crate) const MAX_THRESHOLD: Decimal = Decimal::one();
