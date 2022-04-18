@@ -12,6 +12,8 @@ pub type InstantiateMsg = PollInstantiateMsg;
 pub enum ExecuteMsg {
     Bet { side: u64 },
     FinishPoll { winner: u64 },
+    // TODO : only for internal QA
+    ForceFinishPoll { winner: u64 },
     RevertPoll {},
     Claim {},
     ReclaimDeposit {},

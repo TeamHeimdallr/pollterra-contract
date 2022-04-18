@@ -67,7 +67,13 @@ pub fn execute(
             poll_contract,
             poll_type,
             winner,
-        } => executions::finish_poll(deps, info, poll_contract, poll_type, winner),
+        } => executions::finish_poll(deps, info, poll_contract, poll_type, winner, false),
+        // TODO : only for internal QA
+        ExecuteMsg::ForceFinishPoll {
+            poll_contract,
+            poll_type,
+            winner,
+        } => executions::finish_poll(deps, info, poll_contract, poll_type, winner, true),
         ExecuteMsg::Transfer { recipient, amount } => {
             executions::transfer(deps, env, info, recipient, amount)
         }

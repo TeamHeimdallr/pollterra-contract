@@ -49,6 +49,28 @@
     {
       "type": "object",
       "required": [
+        "force_finish_poll"
+      ],
+      "properties": {
+        "force_finish_poll": {
+          "type": "object",
+          "required": [
+            "winner"
+          ],
+          "properties": {
+            "winner": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "revert_poll"
       ],
       "properties": {
