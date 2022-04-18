@@ -83,6 +83,23 @@ pub fn init_poll(
         _ => Err(ContractError::InvalidPollType {}),
     };
 
+    match poll_type {
+        Ok(PollType::Prediction) => {
+            if resolution_time.is_none() {
+                return Err(ContractError::ShouldHaveResolutionTime {});
+            }
+            if resolution_time.unwrap() < end_time {
+                return Err(ContractError::ShouldEndBeforeResolution {});
+            }
+        }
+        Ok(PollType::Opinion) => {
+            if resolution_time.is_some() {
+                return Err(ContractError::ShouldNotHaveResolutionTime {});
+            }
+        }
+        _ => {}
+    }
+
     let msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Instantiate {
         admin: poll_admin,
         code_id,

@@ -9,6 +9,15 @@ pub enum ContractError {
     #[error("Unauthorized")]
     Unauthorized {},
 
+    #[error("Prediction poll should have resolution time")]
+    ShouldHaveResolutionTime {},
+
+    #[error("Prediction poll should end before the resolution time")]
+    ShouldEndBeforeResolution {},
+
+    #[error("Opinion poll should not have resolution time")]
+    ShouldNotHaveResolutionTime {},
+
     #[error("Invalid reply id")]
     InvalidReplyId {},
 

@@ -212,6 +212,84 @@ mod meta_contract_tests {
     }
 
     #[test]
+    fn fail_poll_init_with_resolution_time() {
+        let mut deps = mock_dependencies(&[]);
+
+        let msg = InstantiateMsg {
+            admins: vec!["creator".to_string()],
+        };
+        let info = mock_info("creator", &[]);
+        let _res = entrypoints::instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        let msg = ExecuteMsg::RegisterTokenContract {
+            token_contract: TOKEN_CONTRACT.to_string(),
+            creation_deposit: DEPOSIT_AMOUNT,
+        };
+        let info = mock_info("creator", &[]);
+        let _res = entrypoints::execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        let info = mock_info(TOKEN_CONTRACT, &[]);
+        let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+            sender: TOKEN_CONTRACT.to_string(),
+            amount: Uint128::from(1_000u128),
+            msg: to_binary(&Cw20HookMsg::InitPoll {
+                code_id: TEST_CODE_ID,
+                poll_name: "test_poll".to_string(),
+                poll_type: "prediction".to_string(),
+                end_time: 1653673599,
+                resolution_time: None,
+                poll_admin: None,
+            })
+            .unwrap(),
+        });
+
+        assert!(matches!(
+            entrypoints::execute(deps.as_mut(), mock_env(), info, msg),
+            Err(ContractError::ShouldHaveResolutionTime {})
+        ));
+
+        let info = mock_info(TOKEN_CONTRACT, &[]);
+        let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+            sender: TOKEN_CONTRACT.to_string(),
+            amount: Uint128::from(1_000u128),
+            msg: to_binary(&Cw20HookMsg::InitPoll {
+                code_id: TEST_CODE_ID,
+                poll_name: "test_poll".to_string(),
+                poll_type: "prediction".to_string(),
+                end_time: 1653673601,
+                resolution_time: Some(1653673600),
+                poll_admin: None,
+            })
+            .unwrap(),
+        });
+
+        assert!(matches!(
+            entrypoints::execute(deps.as_mut(), mock_env(), info, msg),
+            Err(ContractError::ShouldEndBeforeResolution {})
+        ));
+
+        let info = mock_info(TOKEN_CONTRACT, &[]);
+        let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+            sender: TOKEN_CONTRACT.to_string(),
+            amount: Uint128::from(1_000u128),
+            msg: to_binary(&Cw20HookMsg::InitPoll {
+                code_id: TEST_CODE_ID,
+                poll_name: "test_poll".to_string(),
+                poll_type: "opinion".to_string(),
+                end_time: 1653673599,
+                resolution_time: Some(1653673600),
+                poll_admin: None,
+            })
+            .unwrap(),
+        });
+
+        assert!(matches!(
+            entrypoints::execute(deps.as_mut(), mock_env(), info, msg),
+            Err(ContractError::ShouldNotHaveResolutionTime {})
+        ));
+    }
+
+    #[test]
     fn is_admin_test() {
         let mut deps = mock_dependencies(&[]);
 
