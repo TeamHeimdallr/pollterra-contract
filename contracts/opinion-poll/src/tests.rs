@@ -24,8 +24,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Opinion,
-            bet_end_time: 1653673600,
-            resolution_time: 1653673600,
+            end_time: 1653673600,
+            resolution_time: None,
             minimum_bet_amount: None,
             tax_percentage: None,
         };
@@ -38,7 +38,7 @@ mod prediction_poll_tests {
         let state: State = from_binary(&res).unwrap();
         assert_eq!(Addr::unchecked("generator"), config.generator);
         assert_eq!("test_poll", config.poll_name);
-        assert_eq!(1653673600, config.bet_end_time);
+        assert_eq!(1653673600, config.end_time);
         assert_eq!(DEPOSIT_AMOUNT, state.deposit_amount);
     }
 
@@ -55,8 +55,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Opinion,
-            bet_end_time: 1653673600,
-            resolution_time: 1653673600,
+            end_time: 1653673600,
+            resolution_time: None,
             minimum_bet_amount: None,
             tax_percentage: None,
         };
@@ -104,8 +104,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Opinion,
-            bet_end_time: 1653673600,
-            resolution_time: 1653673600,
+            end_time: 1653673600,
+            resolution_time: None,
             minimum_bet_amount: None,
             tax_percentage: None,
         };
@@ -164,8 +164,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Opinion,
-            bet_end_time: 1653673600,
-            resolution_time: 1653673600,
+            end_time: 1653673600,
+            resolution_time: None,
             minimum_bet_amount: None,
             tax_percentage: None,
         };
@@ -208,8 +208,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Opinion,
-            bet_end_time: 1653673600,
-            resolution_time: 1653673600,
+            end_time: 1653673600,
+            resolution_time: None,
             minimum_bet_amount: None,
             tax_percentage: None,
         };
@@ -256,8 +256,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Opinion,
-            bet_end_time: 6400000,
-            resolution_time: 6400000,
+            end_time: 6400000,
+            resolution_time: None,
             minimum_bet_amount: None,
             tax_percentage: None,
         };

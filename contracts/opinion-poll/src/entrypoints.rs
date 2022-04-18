@@ -28,9 +28,9 @@ pub fn instantiate(
         reclaimable_threshold: msg.reclaimable_threshold,
         poll_name: msg.poll_name,
         poll_type: msg.poll_type,
-        bet_end_time: msg.bet_end_time,
-        resolution_time: msg.resolution_time,
+        end_time: msg.end_time,
         // config for prediction poll. not used here.
+        resolution_time: 0u64,
         minimum_bet_amount: Uint128::zero(),
         tax_percentage: Decimal::zero(),
     };

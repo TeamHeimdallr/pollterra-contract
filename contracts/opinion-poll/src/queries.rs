@@ -23,7 +23,7 @@ pub fn query_poll_status(deps: Deps) -> StdResult<PollStatusResponse> {
 
 pub fn query_vote_live(deps: Deps, env: Env) -> StdResult<VoteLiveResponse> {
     let config = read_config(deps.storage)?;
-    let vote_live = env.block.time < Timestamp::from_seconds(config.bet_end_time);
+    let vote_live = env.block.time < Timestamp::from_seconds(config.end_time);
 
     Ok(VoteLiveResponse { vote_live })
 }

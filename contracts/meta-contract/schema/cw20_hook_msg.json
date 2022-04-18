@@ -11,19 +11,18 @@
         "init_poll": {
           "type": "object",
           "required": [
-            "bet_end_time",
             "code_id",
+            "end_time",
             "poll_name",
-            "poll_type",
-            "resolution_time"
+            "poll_type"
           ],
           "properties": {
-            "bet_end_time": {
+            "code_id": {
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
             },
-            "code_id": {
+            "end_time": {
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
@@ -41,7 +40,10 @@
               "type": "string"
             },
             "resolution_time": {
-              "type": "integer",
+              "type": [
+                "integer",
+                "null"
+              ],
               "format": "uint64",
               "minimum": 0.0
             }

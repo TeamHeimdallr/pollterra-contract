@@ -3,23 +3,22 @@
   "title": "PollInstantiateMsg",
   "type": "object",
   "required": [
-    "bet_end_time",
     "deposit_amount",
+    "end_time",
     "generator",
     "poll_name",
     "poll_type",
     "reclaimable_threshold",
-    "resolution_time",
     "token_contract"
   ],
   "properties": {
-    "bet_end_time": {
+    "deposit_amount": {
+      "$ref": "#/definitions/Uint128"
+    },
+    "end_time": {
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
-    },
-    "deposit_amount": {
-      "$ref": "#/definitions/Uint128"
     },
     "generator": {
       "$ref": "#/definitions/Addr"
@@ -44,7 +43,10 @@
       "$ref": "#/definitions/Uint128"
     },
     "resolution_time": {
-      "type": "integer",
+      "type": [
+        "integer",
+        "null"
+      ],
       "format": "uint64",
       "minimum": 0.0
     },

@@ -42,8 +42,8 @@ pub enum Cw20HookMsg {
         code_id: u64,
         poll_name: String,
         poll_type: String,
-        bet_end_time: u64,
-        resolution_time: u64,
+        end_time: u64,
+        resolution_time: Option<u64>,
         poll_admin: Option<String>,
     },
 }

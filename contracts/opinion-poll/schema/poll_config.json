@@ -3,7 +3,7 @@
   "title": "PollConfig",
   "type": "object",
   "required": [
-    "bet_end_time",
+    "end_time",
     "generator",
     "minimum_bet_amount",
     "owner",
@@ -15,7 +15,7 @@
     "token_contract"
   ],
   "properties": {
-    "bet_end_time": {
+    "end_time": {
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0

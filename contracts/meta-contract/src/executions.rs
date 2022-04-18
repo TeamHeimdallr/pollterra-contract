@@ -39,7 +39,7 @@ pub fn receive_cw20(
             code_id,
             poll_name,
             poll_type,
-            bet_end_time,
+            end_time,
             resolution_time,
             poll_admin,
         }) => init_poll(
@@ -50,7 +50,7 @@ pub fn receive_cw20(
             cw20_msg.amount,
             poll_name,
             poll_type,
-            bet_end_time,
+            end_time,
             resolution_time,
             poll_admin,
         ),
@@ -67,8 +67,8 @@ pub fn init_poll(
     deposit_amount: Uint128,
     poll_name: String,
     poll_type: String,
-    bet_end_time: u64,
-    resolution_time: u64,
+    end_time: u64,
+    resolution_time: Option<u64>,
     poll_admin: Option<String>,
 ) -> Result<Response, ContractError> {
     let config = Config::load(deps.storage)?;
@@ -83,6 +83,23 @@ pub fn init_poll(
         _ => Err(ContractError::InvalidPollType {}),
     };
 
+    match poll_type {
+        Ok(PollType::Prediction) => {
+            if resolution_time.is_none() {
+                return Err(ContractError::ShouldHaveResolutionTime {});
+            }
+            if resolution_time.unwrap() < end_time {
+                return Err(ContractError::ShouldEndBeforeResolution {});
+            }
+        }
+        Ok(PollType::Opinion) => {
+            if resolution_time.is_some() {
+                return Err(ContractError::ShouldNotHaveResolutionTime {});
+            }
+        }
+        _ => {}
+    }
+
     let msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Instantiate {
         admin: poll_admin,
         code_id,
@@ -93,7 +110,7 @@ pub fn init_poll(
             reclaimable_threshold: config.reclaimable_threshold,
             poll_name: poll_name.clone(),
             poll_type: poll_type?,
-            bet_end_time,
+            end_time,
             resolution_time,
             minimum_bet_amount: Some(config.minimum_bet_amount),
             tax_percentage: Some(config.tax_percentage),

@@ -24,7 +24,7 @@ pub fn query_bet_status(deps: Deps) -> StdResult<BetStatusResponse> {
 pub fn query_bet_live(deps: Deps, env: Env) -> StdResult<BetLiveResponse> {
     let config = read_config(deps.storage)?;
     let state = read_state(deps.storage)?;
-    let bet_live = env.block.time < Timestamp::from_seconds(config.bet_end_time)
+    let bet_live = env.block.time < Timestamp::from_seconds(config.end_time)
         && state.status == BetStatus::Voting;
 
     Ok(BetLiveResponse { bet_live })

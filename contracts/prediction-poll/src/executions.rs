@@ -24,11 +24,8 @@ pub fn try_bet(
     let config = read_config(deps.storage)?;
 
     // current block time is less than start time or larger than bet end time
-    if env.block.time >= Timestamp::from_seconds(config.bet_end_time) {
-        return Err(ContractError::BetIsNotLive(
-            env.block.time,
-            config.bet_end_time,
-        ));
+    if env.block.time >= Timestamp::from_seconds(config.end_time) {
+        return Err(ContractError::BetIsNotLive(env.block.time, config.end_time));
     }
 
     // Check if some funds are sent
@@ -104,9 +101,11 @@ pub fn try_finish_poll(
     }
 
     // cannot finish before poll ends
-    if env.block.time < Timestamp::from_seconds(config.bet_end_time) {
+    if env.block.time < Timestamp::from_seconds(config.resolution_time) {
         return Err(ContractError::FinishBeforeEndTime {});
     }
+
+    let mut response = Response::new().add_attribute("method", "try_finish_poll");
 
     let winner_amount = match SIDE_TOTAL_AMOUNT.may_load(deps.storage, &winner.to_be_bytes())? {
         Some(value) => value,
@@ -168,13 +167,17 @@ pub fn try_finish_poll(
     let contract_balance = deps
         .querier
         .query_balance(env.contract.address, DENOM.to_string())?;
-    let transfer_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
-        to_address: config.owner.to_string(),
-        amount: vec![Coin {
-            denom: DENOM.to_string(),
-            amount: contract_balance.amount - total_rewards,
-        }],
-    });
+    let transfer_amount = contract_balance.amount - total_rewards;
+    if !transfer_amount.is_zero() {
+        let transfer_msg: CosmosMsg = CosmosMsg::Bank(BankMsg::Send {
+            to_address: config.owner.to_string(),
+            amount: vec![Coin {
+                denom: DENOM.to_string(),
+                amount: transfer_amount,
+            }],
+        });
+        response = response.add_message(transfer_msg);
+    }
 
     // Save the new state
     state.status = BetStatus::Reward;
@@ -194,14 +197,11 @@ pub fn try_finish_poll(
     state.deposit_reclaimed = true;
     store_state(deps.storage, &state)?;
 
-    Ok(Response::new()
-        .add_attribute("method", "try_finish_poll")
-        .add_message(CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: config.token_contract,
-            msg: to_binary(&cw20_msg)?,
-            funds: vec![],
-        }))
-        .add_message(transfer_msg))
+    Ok(response.add_message(CosmosMsg::Wasm(WasmMsg::Execute {
+        contract_addr: config.token_contract,
+        msg: to_binary(&cw20_msg)?,
+        funds: vec![],
+    })))
 }
 
 pub fn try_revert_poll(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
