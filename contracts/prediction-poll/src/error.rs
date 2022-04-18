@@ -11,6 +11,9 @@ pub enum ContractError {
     #[error("{0}")]
     Utf8Error(#[from] Utf8Error),
 
+    #[error("Bet should end before the resolution time")]
+    ShouldEndBeforeResolution {},
+
     #[error("Unauthorized")]
     Unauthorized {},
 

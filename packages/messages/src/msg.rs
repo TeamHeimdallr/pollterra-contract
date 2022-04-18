@@ -11,9 +11,9 @@ pub struct PollInstantiateMsg {
     pub reclaimable_threshold: Uint128,
     pub poll_name: String,
     pub poll_type: PollType,
-    pub bet_end_time: u64,
-    pub resolution_time: u64,
+    pub end_time: u64,
     // only for prediction poll
+    pub resolution_time: Option<u64>,
     pub minimum_bet_amount: Option<Uint128>,
     pub tax_percentage: Option<Decimal>,
     // TODO : participation requirements for opinion poll

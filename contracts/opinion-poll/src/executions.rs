@@ -20,10 +20,10 @@ pub fn vote(
     let config = read_config(deps.storage)?;
 
     // current block time is less than start time or larger than bet end time
-    if env.block.time >= Timestamp::from_seconds(config.bet_end_time) {
+    if env.block.time >= Timestamp::from_seconds(config.end_time) {
         return Err(ContractError::VoteIsNotLive(
             env.block.time,
-            config.bet_end_time,
+            config.end_time,
         ));
     }
 
@@ -78,10 +78,10 @@ pub fn change_side(
     let config = read_config(deps.storage)?;
 
     // current block time is less than start time or larger than bet end time
-    if env.block.time >= Timestamp::from_seconds(config.bet_end_time) {
+    if env.block.time >= Timestamp::from_seconds(config.end_time) {
         return Err(ContractError::VoteIsNotLive(
             env.block.time,
-            config.bet_end_time,
+            config.end_time,
         ));
     }
 
@@ -152,7 +152,7 @@ pub fn finish_poll(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Respons
     }
 
     // cannot finish before poll ends
-    if env.block.time < Timestamp::from_seconds(config.bet_end_time) {
+    if env.block.time < Timestamp::from_seconds(config.end_time) {
         return Err(ContractError::FinishBeforeEndTime {});
     }
 

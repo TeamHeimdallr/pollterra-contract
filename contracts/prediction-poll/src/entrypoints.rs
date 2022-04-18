@@ -28,11 +28,15 @@ pub fn instantiate(
         reclaimable_threshold: msg.reclaimable_threshold,
         poll_name: msg.poll_name,
         poll_type: msg.poll_type,
-        bet_end_time: msg.bet_end_time,
-        resolution_time: msg.resolution_time,
+        end_time: msg.end_time,
+        resolution_time: msg.resolution_time.unwrap(),
         minimum_bet_amount: msg.minimum_bet_amount.unwrap(),
         tax_percentage: msg.tax_percentage.unwrap(),
     };
+    if config.end_time >= config.resolution_time {
+        return Err(ContractError::ShouldEndBeforeResolution {});
+    }
+
     let state = State {
         deposit_amount: msg.deposit_amount,
         deposit_reclaimed: false,

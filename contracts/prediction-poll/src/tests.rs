@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod prediction_poll_tests {
     use crate::entrypoints::{execute, instantiate, query};
+    use crate::error::ContractError;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info, MOCK_CONTRACT_ADDR};
 
     use config::config::PollType;
@@ -27,8 +28,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Prediction,
-            bet_end_time: 1653673600,
-            resolution_time: 1653673600,
+            end_time: 1653673599,
+            resolution_time: Some(1653673600),
             minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
             tax_percentage: Some(Decimal::zero()),
         };
@@ -41,8 +42,31 @@ mod prediction_poll_tests {
         let state: State = from_binary(&res).unwrap();
         assert_eq!(Addr::unchecked("generator"), config.generator);
         assert_eq!("test_poll", config.poll_name);
-        assert_eq!(1653673600, config.bet_end_time);
+        assert_eq!(1653673599, config.end_time);
         assert_eq!(DEPOSIT_AMOUNT, state.deposit_amount);
+    }
+
+    #[test]
+    fn init_failed_end_time() {
+        let mut deps = mock_dependencies(&[]);
+
+        let msg = InstantiateMsg {
+            generator: Addr::unchecked("generator"),
+            token_contract: "terra1pollterratoken".to_string(),
+            deposit_amount: DEPOSIT_AMOUNT,
+            reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
+            poll_name: "test_poll".to_string(),
+            poll_type: PollType::Prediction,
+            end_time: 1653673601,
+            resolution_time: Some(1653673600),
+            minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
+            tax_percentage: Some(Decimal::zero()),
+        };
+        let info = mock_info("creator", &[]);
+        assert!(matches!(
+            instantiate(deps.as_mut(), mock_env(), info, msg),
+            Err(ContractError::ShouldEndBeforeResolution {})
+        ));
     }
 
     #[test]
@@ -58,8 +82,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Prediction,
-            bet_end_time: 1653673600,
-            resolution_time: 1653673600,
+            end_time: 1653673599,
+            resolution_time: Some(1653673600),
             minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
             tax_percentage: Some(Decimal::zero()),
         };
@@ -101,8 +125,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Prediction,
-            bet_end_time: 1653673600,
-            resolution_time: 1653673600,
+            end_time: 1653673599,
+            resolution_time: Some(1653673600),
             minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
             tax_percentage: Some(Decimal::zero()),
         };
@@ -151,8 +175,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Prediction,
-            bet_end_time: 1653673600,
-            resolution_time: 1653673600,
+            end_time: 1653673599,
+            resolution_time: Some(1653673600),
             minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
             tax_percentage: Some(Decimal::percent(1_u64)),
         };
@@ -176,7 +200,7 @@ mod prediction_poll_tests {
         let res = execute(deps.as_mut(), env, info, msg).unwrap();
 
         assert_eq!(
-            res.messages[1].msg,
+            res.messages[0].msg,
             CosmosMsg::Bank(BankMsg::Send {
                 to_address: "creator".to_string(),
                 amount: vec![Coin {
@@ -211,8 +235,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Prediction,
-            bet_end_time: 1653673600,
-            resolution_time: 1653673600,
+            end_time: 1653673599,
+            resolution_time: Some(1653673600),
             minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
             tax_percentage: Some(Decimal::percent(1_u64)),
         };
@@ -285,8 +309,8 @@ mod prediction_poll_tests {
             reclaimable_threshold: DEFAULT_RECLAIMABLE_THRESHOLD,
             poll_name: "test_poll".to_string(),
             poll_type: PollType::Prediction,
-            bet_end_time: 6400000,
-            resolution_time: 6400000,
+            end_time: 6399999,
+            resolution_time: Some(6400000),
             minimum_bet_amount: Some(DEFAULT_MINIMUM_BET),
             tax_percentage: Some(Decimal::zero()),
         };
