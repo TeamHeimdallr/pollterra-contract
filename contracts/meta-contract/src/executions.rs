@@ -156,7 +156,7 @@ pub fn finish_poll(
     }
 
     let message: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Execute {
-        contract_addr: poll_contract.clone(),
+        contract_addr: deps.api.addr_validate(&poll_contract)?.to_string(),
         msg: match poll_type {
             PollType::Prediction => to_binary(&PredictionPollExecuteMsg::FinishPoll {
                 winner: winner.unwrap(),
