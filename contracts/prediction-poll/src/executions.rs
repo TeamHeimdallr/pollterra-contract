@@ -102,7 +102,7 @@ pub fn try_finish_poll(
     }
 
     // cannot finish before poll ends
-    if forced || env.block.time < Timestamp::from_seconds(config.resolution_time) {
+    if !forced && env.block.time < Timestamp::from_seconds(config.resolution_time) {
         return Err(ContractError::FinishBeforeEndTime {});
     }
 

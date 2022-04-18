@@ -158,7 +158,7 @@ pub fn finish_poll(
     }
 
     // cannot finish before poll ends
-    if forced || env.block.time < Timestamp::from_seconds(config.end_time) {
+    if !forced && env.block.time < Timestamp::from_seconds(config.end_time) {
         return Err(ContractError::FinishBeforeEndTime {});
     }
 
