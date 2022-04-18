@@ -24,6 +24,12 @@ pub enum ExecuteMsg {
         poll_type: String,
         winner: Option<u64>,
     },
+    // TODO : only for internal QA
+    ForceFinishPoll {
+        poll_contract: String,
+        poll_type: String,
+        winner: Option<u64>,
+    },
     Transfer {
         recipient: String,
         amount: Uint128,
@@ -46,16 +52,4 @@ pub enum Cw20HookMsg {
         resolution_time: Option<u64>,
         poll_admin: Option<String>,
     },
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum PredictionPollExecuteMsg {
-    FinishPoll { winner: u64 },
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum OpinionPollExecuteMsg {
-    FinishPoll {},
 }

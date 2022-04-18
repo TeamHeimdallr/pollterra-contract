@@ -5,6 +5,8 @@ use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use messages::meta_contract::execute_msgs::*;
 use messages::meta_contract::query_msgs::*;
+use messages::opinion_poll::execute_msgs::ExecuteMsg as OpinionPollExecuteMsg;
+use messages::prediction_poll::execute_msgs::ExecuteMsg as PredictionPollExecuteMsg;
 
 fn main() {
     let mut out_dir = current_dir().unwrap();

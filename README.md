@@ -16,9 +16,9 @@
 
 | - | Code ID | Example contract address |
 |---|---------|--------------------------|
-| meta-contract | 64487 | terra1qpp0v0zp25ax8fhqnvkt3qtk3gug3df8d4uf7u |
-| prediction-poll | 64488 | - |
-| opinion-poll | 64489 | - |
+| meta-contract | 64561 | terra1qpp0v0zp25ax8fhqnvkt3qtk3gug3df8d4uf7u |
+| prediction-poll | 64570 | - |
+| opinion-poll | 64571 | - |
 | governance | 63931 | - |
 | distributor | 62677 | - |
 | community | 62678 | - |

@@ -61,6 +61,18 @@
     {
       "type": "object",
       "required": [
+        "force_finish_poll"
+      ],
+      "properties": {
+        "force_finish_poll": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "reclaim_deposit"
       ],
       "properties": {

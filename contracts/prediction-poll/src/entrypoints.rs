@@ -64,7 +64,13 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Bet { side } => executions::try_bet(deps, _env, info, side),
-        ExecuteMsg::FinishPoll { winner } => executions::try_finish_poll(deps, _env, info, winner),
+        ExecuteMsg::FinishPoll { winner } => {
+            executions::try_finish_poll(deps, _env, info, winner, false)
+        }
+        // TODO : only for internal QA
+        ExecuteMsg::ForceFinishPoll { winner } => {
+            executions::try_finish_poll(deps, _env, info, winner, true)
+        }
         ExecuteMsg::RevertPoll {} => executions::try_revert_poll(deps, info),
         ExecuteMsg::Claim {} => executions::try_claim(deps, info),
         ExecuteMsg::ReclaimDeposit {} => executions::try_reclaim_deposit(deps),

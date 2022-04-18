@@ -13,6 +13,8 @@ pub enum ExecuteMsg {
     Vote { side: u64 },
     ChangeSide { side: u64 },
     FinishPoll {},
+    // TODO : only for internal QA
+    ForceFinishPoll {},
     ReclaimDeposit {},
     TransferOwner { new_owner: String },
 }

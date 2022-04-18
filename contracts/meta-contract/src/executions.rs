@@ -4,10 +4,10 @@ use cosmwasm_std::{
     from_binary, to_binary, Addr, BankMsg, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Response,
     StdResult, SubMsg, Uint128, WasmMsg,
 };
-use messages::meta_contract::execute_msgs::{
-    Cw20HookMsg, OpinionPollExecuteMsg, PredictionPollExecuteMsg,
-};
+use messages::meta_contract::execute_msgs::Cw20HookMsg;
 use messages::meta_contract::state::{Config, State, CONTRACTS};
+use messages::opinion_poll::execute_msgs::ExecuteMsg as OpinionPollExecuteMsg;
+use messages::prediction_poll::execute_msgs::ExecuteMsg as PredictionPollExecuteMsg;
 
 use cw20::Cw20ReceiveMsg;
 
@@ -155,6 +155,7 @@ pub fn finish_poll(
     poll_contract: String,
     poll_type: String,
     winner: Option<u64>,
+    forced: bool, // TODO : only for internal QA
 ) -> Result<Response, ContractError> {
     let config = Config::load(deps.storage)?;
 
@@ -174,20 +175,38 @@ pub fn finish_poll(
 
     let message: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Execute {
         contract_addr: deps.api.addr_validate(&poll_contract)?.to_string(),
-        msg: match poll_type {
-            PollType::Prediction => to_binary(&PredictionPollExecuteMsg::FinishPoll {
-                winner: winner.unwrap(),
-            })?,
-            PollType::Opinion => {
-                let addr = &deps.api.addr_validate(poll_contract.as_str())?;
-                CONTRACTS.remove(deps.storage, addr);
+        msg: match forced {
+            // TODO : only for internal QA
+            true => match poll_type {
+                PollType::Prediction => to_binary(&PredictionPollExecuteMsg::ForceFinishPoll {
+                    winner: winner.unwrap(),
+                })?,
+                PollType::Opinion => {
+                    let addr = &deps.api.addr_validate(poll_contract.as_str())?;
+                    CONTRACTS.remove(deps.storage, addr);
 
-                let mut state: State = State::load(deps.storage)?;
-                state.num_contract -= 1;
-                state.save(deps.storage)?;
+                    let mut state: State = State::load(deps.storage)?;
+                    state.num_contract -= 1;
+                    state.save(deps.storage)?;
 
-                to_binary(&OpinionPollExecuteMsg::FinishPoll {})?
-            }
+                    to_binary(&OpinionPollExecuteMsg::ForceFinishPoll {})?
+                }
+            },
+            false => match poll_type {
+                PollType::Prediction => to_binary(&PredictionPollExecuteMsg::FinishPoll {
+                    winner: winner.unwrap(),
+                })?,
+                PollType::Opinion => {
+                    let addr = &deps.api.addr_validate(poll_contract.as_str())?;
+                    CONTRACTS.remove(deps.storage, addr);
+
+                    let mut state: State = State::load(deps.storage)?;
+                    state.num_contract -= 1;
+                    state.save(deps.storage)?;
+
+                    to_binary(&OpinionPollExecuteMsg::FinishPoll {})?
+                }
+            },
         },
         funds: vec![],
     });

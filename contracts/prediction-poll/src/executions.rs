@@ -86,6 +86,7 @@ pub fn try_finish_poll(
     env: Env,
     info: MessageInfo,
     winner: u64,
+    forced: bool,
 ) -> Result<Response, ContractError> {
     let config = read_config(deps.storage)?;
     let mut state = read_state(deps.storage)?;
@@ -101,7 +102,7 @@ pub fn try_finish_poll(
     }
 
     // cannot finish before poll ends
-    if env.block.time < Timestamp::from_seconds(config.resolution_time) {
+    if !forced && env.block.time < Timestamp::from_seconds(config.resolution_time) {
         return Err(ContractError::FinishBeforeEndTime {});
     }
 

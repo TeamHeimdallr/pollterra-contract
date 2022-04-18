@@ -137,7 +137,13 @@ pub fn change_side(
     ]))
 }
 
-pub fn finish_poll(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
+// TODO : forced -> only for internal QA
+pub fn finish_poll(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    forced: bool,
+) -> Result<Response, ContractError> {
     let config = read_config(deps.storage)?;
     let mut state = read_state(deps.storage)?;
 
@@ -152,7 +158,7 @@ pub fn finish_poll(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Respons
     }
 
     // cannot finish before poll ends
-    if env.block.time < Timestamp::from_seconds(config.end_time) {
+    if !forced && env.block.time < Timestamp::from_seconds(config.end_time) {
         return Err(ContractError::FinishBeforeEndTime {});
     }
 
