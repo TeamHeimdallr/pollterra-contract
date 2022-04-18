@@ -7,7 +7,7 @@ use cosmwasm_std::{
 use messages::meta_contract::execute_msgs::{
     Cw20HookMsg, OpinionPollExecuteMsg, PredictionPollExecuteMsg,
 };
-use messages::meta_contract::state::Config;
+use messages::meta_contract::state::{Config, State, CONTRACTS};
 
 use cw20::Cw20ReceiveMsg;
 
@@ -156,12 +156,21 @@ pub fn finish_poll(
     }
 
     let message: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Execute {
-        contract_addr: poll_contract,
+        contract_addr: poll_contract.clone(),
         msg: match poll_type {
             PollType::Prediction => to_binary(&PredictionPollExecuteMsg::FinishPoll {
                 winner: winner.unwrap(),
             })?,
-            PollType::Opinion => to_binary(&OpinionPollExecuteMsg::FinishPoll {})?,
+            PollType::Opinion => {
+                let addr = &deps.api.addr_validate(poll_contract.as_str())?;
+                CONTRACTS.remove(deps.storage, addr);
+
+                let mut state: State = State::load(deps.storage)?;
+                state.num_contract -= 1;
+                state.save(deps.storage)?;
+
+                to_binary(&OpinionPollExecuteMsg::FinishPoll {})?
+            }
         },
         funds: vec![],
     });
