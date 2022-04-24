@@ -49,6 +49,7 @@ pub enum Cw20HookMsg {
         poll_name: String,
         poll_type: String,
         end_time: u64,
+        num_side: Option<u64>,
         resolution_time: Option<u64>,
         poll_admin: Option<String>,
     },

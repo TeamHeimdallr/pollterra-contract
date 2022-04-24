@@ -52,6 +52,10 @@ pub fn try_bet(
         ));
     }
 
+    if side >= config.num_side {
+        return Err(ContractError::SideOutOfRange(config.num_side));
+    }
+
     let update_action = |exists: Option<Uint128>| -> StdResult<Uint128> {
         match exists {
             Some(bet) => Ok(bet + sent),
@@ -104,6 +108,10 @@ pub fn try_finish_poll(
     // cannot finish before poll ends
     if !forced && env.block.time < Timestamp::from_seconds(config.resolution_time) {
         return Err(ContractError::FinishBeforeEndTime {});
+    }
+
+    if winner >= config.num_side {
+        return Err(ContractError::SideOutOfRange(config.num_side));
     }
 
     let mut response = Response::new().add_attribute("method", "try_finish_poll");

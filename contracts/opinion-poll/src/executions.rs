@@ -39,6 +39,10 @@ pub fn vote(
         return Err(ContractError::NotEmptyFunds {});
     }
 
+    if side >= config.num_side {
+        return Err(ContractError::SideOutOfRange(config.num_side));
+    }
+
     SIDES.update(
         deps.storage,
         &side.to_be_bytes(),
@@ -93,6 +97,10 @@ pub fn change_side(
     // Check if some funds are sent
     if !info.funds.is_empty() {
         return Err(ContractError::NotEmptyFunds {});
+    }
+
+    if side >= config.num_side {
+        return Err(ContractError::SideOutOfRange(config.num_side));
     }
 
     let original_side = VOTES.load(deps.storage, &info.sender)?;

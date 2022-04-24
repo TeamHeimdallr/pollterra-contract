@@ -42,6 +42,7 @@ pub fn receive_cw20(
             end_time,
             resolution_time,
             poll_admin,
+            num_side,
         }) => init_poll(
             deps,
             info,
@@ -53,6 +54,7 @@ pub fn receive_cw20(
             end_time,
             resolution_time,
             poll_admin,
+            num_side,
         ),
         _ => Err(ContractError::InvalidCw20Msg {}),
     }
@@ -70,6 +72,7 @@ pub fn init_poll(
     end_time: u64,
     resolution_time: Option<u64>,
     poll_admin: Option<String>,
+    num_side: Option<u64>,
 ) -> Result<Response, ContractError> {
     let config = Config::load(deps.storage)?;
 
@@ -111,6 +114,7 @@ pub fn init_poll(
             poll_name: poll_name.clone(),
             poll_type: poll_type?,
             end_time,
+            num_side: num_side.unwrap_or(2),
             resolution_time,
             minimum_bet_amount: Some(config.minimum_bet_amount),
             tax_percentage: Some(config.tax_percentage),

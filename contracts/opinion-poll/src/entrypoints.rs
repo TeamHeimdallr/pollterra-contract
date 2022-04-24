@@ -29,6 +29,7 @@ pub fn instantiate(
         poll_name: msg.poll_name,
         poll_type: msg.poll_type,
         end_time: msg.end_time,
+        num_side: msg.num_side,
         // config for prediction poll. not used here.
         resolution_time: 0u64,
         minimum_bet_amount: Uint128::zero(),
@@ -86,5 +87,6 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::VoteLive {} => to_binary(&queries::query_vote_live(deps, _env)?),
         QueryMsg::VoteCount { side } => to_binary(&queries::query_vote_count(deps, side)?),
         QueryMsg::UserVote { address } => to_binary(&queries::query_user_vote(deps, address)?),
+        QueryMsg::VotePerSide {} => to_binary(&queries::query_vote_per_side(deps)?),
     }
 }

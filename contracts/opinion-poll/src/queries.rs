@@ -1,8 +1,9 @@
-use cosmwasm_std::{Deps, Env, StdResult, Timestamp};
+use cosmwasm_std::{Deps, Env, StdResult, Timestamp, Uint128};
+use std::collections::HashMap;
 
 use messages::opinion_poll::query_msgs::{
     ConfigResponse, PollStatusResponse, StateResponse, UserVoteResponse, VoteCountResponse,
-    VoteLiveResponse,
+    VoteLiveResponse, VotePerSideResponse,
 };
 use messages::opinion_poll::state::{read_config, read_state, SIDES, VOTES};
 
@@ -39,4 +40,17 @@ pub fn query_user_vote(deps: Deps, address: String) -> StdResult<UserVoteRespons
     let side = VOTES.may_load(deps.storage, &addr)?;
 
     Ok(UserVoteResponse { side })
+}
+
+pub fn query_vote_per_side(deps: Deps) -> StdResult<VotePerSideResponse> {
+    let config = read_config(deps.storage)?;
+
+    let mut votes: HashMap<u64, Uint128> = HashMap::new();
+    for side in 0..config.num_side {
+        votes.insert(
+            side,
+            Uint128::from((SIDES.may_load(deps.storage, &side.to_be_bytes())?).unwrap_or(0)),
+        );
+    }
+    Ok(VotePerSideResponse { votes })
 }

@@ -1,10 +1,13 @@
 use cosmwasm_std::{Deps, Env, StdResult, Timestamp, Uint128};
+use std::collections::HashMap;
 
 use messages::prediction_poll::query_msgs::{
     BetLiveResponse, BetStatusResponse, ConfigResponse, RewardLiveResponse, StateResponse,
-    UserBetResponse, UserRewardsResponse,
+    UserBetResponse, UserRewardsResponse, VotePerSideResponse,
 };
-use messages::prediction_poll::state::{read_config, read_state, BetStatus, BETS, REWARDS};
+use messages::prediction_poll::state::{
+    read_config, read_state, BetStatus, BETS, REWARDS, SIDE_TOTAL_AMOUNT,
+};
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = read_config(deps.storage)?;
@@ -53,4 +56,18 @@ pub fn query_user_rewards(deps: Deps, address: String) -> StdResult<UserRewardsR
     };
 
     Ok(UserRewardsResponse { reward })
+}
+
+pub fn query_vote_per_side(deps: Deps) -> StdResult<VotePerSideResponse> {
+    let config = read_config(deps.storage)?;
+
+    let mut votes: HashMap<u64, Uint128> = HashMap::new();
+    for side in 0..config.num_side {
+        votes.insert(
+            side,
+            (SIDE_TOTAL_AMOUNT.may_load(deps.storage, &side.to_be_bytes())?)
+                .unwrap_or_else(Uint128::zero),
+        );
+    }
+    Ok(VotePerSideResponse { votes })
 }

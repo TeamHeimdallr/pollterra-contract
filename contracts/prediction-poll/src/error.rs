@@ -23,6 +23,9 @@ pub enum ContractError {
     #[error("You need to send some ust in order to bet")]
     EmptyFunds {},
 
+    #[error("Side should be less than {0}")]
+    SideOutOfRange(u64),
+
     #[error("You'd better not send funds")]
     NotEmptyFunds {},
 

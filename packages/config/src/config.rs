@@ -12,6 +12,7 @@ pub struct PollConfig {
     pub poll_name: String,
     pub poll_type: PollType,
     pub end_time: u64,
+    pub num_side: u64,
     // only for prediction poll
     pub resolution_time: u64,
     pub minimum_bet_amount: Uint128,
