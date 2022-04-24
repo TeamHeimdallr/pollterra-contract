@@ -27,6 +27,14 @@
               "format": "uint64",
               "minimum": 0.0
             },
+            "num_side": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
             "poll_admin": {
               "type": [
                 "string",

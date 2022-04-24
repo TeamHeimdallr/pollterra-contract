@@ -6,6 +6,7 @@
     "deposit_amount",
     "end_time",
     "generator",
+    "num_side",
     "poll_name",
     "poll_type",
     "reclaimable_threshold",
@@ -32,6 +33,11 @@
           "type": "null"
         }
       ]
+    },
+    "num_side": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
     },
     "poll_name": {
       "type": "string"
