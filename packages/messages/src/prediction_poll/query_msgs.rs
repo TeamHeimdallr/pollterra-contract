@@ -2,7 +2,6 @@ use super::state::{BetStatus, Config, State};
 use cosmwasm_std::Uint128;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -45,7 +44,7 @@ pub struct UserRewardsResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct VotePerSideResponse {
-    pub votes: HashMap<u64, Uint128>,
+    pub votes: Vec<Uint128>,
 }
 
 pub type ConfigResponse = Config;

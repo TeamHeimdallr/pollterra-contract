@@ -1,5 +1,4 @@
 use cosmwasm_std::{Deps, Env, StdResult, Timestamp, Uint128};
-use std::collections::HashMap;
 
 use messages::prediction_poll::query_msgs::{
     BetLiveResponse, BetStatusResponse, ConfigResponse, RewardLiveResponse, StateResponse,
@@ -61,10 +60,9 @@ pub fn query_user_rewards(deps: Deps, address: String) -> StdResult<UserRewardsR
 pub fn query_vote_per_side(deps: Deps) -> StdResult<VotePerSideResponse> {
     let config = read_config(deps.storage)?;
 
-    let mut votes: HashMap<u64, Uint128> = HashMap::new();
+    let mut votes: Vec<Uint128> = Vec::new();
     for side in 0..config.num_side {
-        votes.insert(
-            side,
+        votes.push(
             (SIDE_TOTAL_AMOUNT.may_load(deps.storage, &side.to_be_bytes())?)
                 .unwrap_or_else(Uint128::zero),
         );

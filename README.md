@@ -17,8 +17,8 @@
 | - | Code ID | Example contract address |
 |---|---------|--------------------------|
 | meta-contract | 66472 | terra1qpp0v0zp25ax8fhqnvkt3qtk3gug3df8d4uf7u |
-| prediction-poll | 66473 | - |
-| opinion-poll | 66474 | - |
+| prediction-poll | 66514 | - |
+| opinion-poll | 66515 | - |
 | governance | 63931 | - |
 | distributor | 62677 | - |
 | community | 62678 | - |

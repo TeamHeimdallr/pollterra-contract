@@ -2,7 +2,6 @@ use super::state::{Config, State};
 use cosmwasm_std::Uint128;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 use config::config::PollStatus;
 
@@ -41,7 +40,7 @@ pub struct UserVoteResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct VotePerSideResponse {
-    pub votes: HashMap<u64, Uint128>,
+    pub votes: Vec<Uint128>,
 }
 
 pub type ConfigResponse = Config;
