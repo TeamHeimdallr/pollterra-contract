@@ -29,6 +29,7 @@ pub fn instantiate(
         poll_name: msg.poll_name,
         poll_type: msg.poll_type,
         end_time: msg.end_time,
+        num_side: msg.num_side,
         resolution_time: msg.resolution_time.unwrap(),
         minimum_bet_amount: msg.minimum_bet_amount.unwrap(),
         tax_percentage: msg.tax_percentage.unwrap(),
@@ -102,5 +103,6 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::UserRewards { address } => {
             to_binary(&queries::query_user_rewards(deps, address)?)
         }
+        QueryMsg::VotePerSide {} => to_binary(&queries::query_vote_per_side(deps)?),
     }
 }

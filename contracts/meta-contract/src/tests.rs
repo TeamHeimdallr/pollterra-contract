@@ -100,6 +100,7 @@ mod meta_contract_tests {
                 end_time: 1653673599,
                 resolution_time: Some(1653673600),
                 poll_admin: None,
+                num_side: None,
             })
             .unwrap(),
         });
@@ -120,6 +121,7 @@ mod meta_contract_tests {
                 poll_name: "test_poll".to_string(),
                 poll_type: PollType::Prediction,
                 end_time: 1653673599,
+                num_side: 2,
                 resolution_time: Some(1653673600),
             })
             .unwrap(),
@@ -140,6 +142,7 @@ mod meta_contract_tests {
                 poll_name: "test_poll".to_string(),
                 poll_type: "opinion".to_string(),
                 end_time: 1653673599,
+                num_side: None,
                 resolution_time: None,
                 poll_admin: None,
             })
@@ -162,6 +165,7 @@ mod meta_contract_tests {
                 poll_name: "test_poll".to_string(),
                 poll_type: PollType::Opinion,
                 end_time: 1653673599,
+                num_side: 2,
                 resolution_time: None,
             })
             .unwrap(),
@@ -201,6 +205,7 @@ mod meta_contract_tests {
                 end_time: 1653673599,
                 resolution_time: Some(1653673600),
                 poll_admin: None,
+                num_side: None,
             })
             .unwrap(),
         });
@@ -239,6 +244,7 @@ mod meta_contract_tests {
                 end_time: 1653673599,
                 resolution_time: None,
                 poll_admin: None,
+                num_side: None,
             })
             .unwrap(),
         });
@@ -259,6 +265,7 @@ mod meta_contract_tests {
                 end_time: 1653673601,
                 resolution_time: Some(1653673600),
                 poll_admin: None,
+                num_side: None,
             })
             .unwrap(),
         });
@@ -279,6 +286,7 @@ mod meta_contract_tests {
                 end_time: 1653673599,
                 resolution_time: Some(1653673600),
                 poll_admin: None,
+                num_side: None,
             })
             .unwrap(),
         });

@@ -75,6 +75,18 @@
     {
       "type": "object",
       "required": [
+        "vote_per_side"
+      ],
+      "properties": {
+        "vote_per_side": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "user_vote"
       ],
       "properties": {

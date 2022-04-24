@@ -1,4 +1,5 @@
 use super::state::{Config, State};
+use cosmwasm_std::Uint128;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -12,6 +13,7 @@ pub enum QueryMsg {
     PollStatus {},
     VoteLive {},
     VoteCount { side: u64 },
+    VotePerSide {},
     UserVote { address: String },
 }
 
@@ -34,6 +36,11 @@ pub struct VoteCountResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct UserVoteResponse {
     pub side: Option<u64>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct VotePerSideResponse {
+    pub votes: Vec<Uint128>,
 }
 
 pub type ConfigResponse = Config;

@@ -6,6 +6,7 @@
     "end_time",
     "generator",
     "minimum_bet_amount",
+    "num_side",
     "owner",
     "poll_name",
     "poll_type",
@@ -25,6 +26,11 @@
     },
     "minimum_bet_amount": {
       "$ref": "#/definitions/Uint128"
+    },
+    "num_side": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
     },
     "owner": {
       "$ref": "#/definitions/Addr"

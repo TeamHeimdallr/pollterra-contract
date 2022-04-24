@@ -13,6 +13,7 @@ pub enum QueryMsg {
     UserBet { address: String, side: u64 },
     UserRewards { address: String },
     BetStatus {},
+    VotePerSide {},
 }
 
 // We define a custom struct for each query response
@@ -39,6 +40,11 @@ pub struct UserBetResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct UserRewardsResponse {
     pub reward: Uint128,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct VotePerSideResponse {
+    pub votes: Vec<Uint128>,
 }
 
 pub type ConfigResponse = Config;
