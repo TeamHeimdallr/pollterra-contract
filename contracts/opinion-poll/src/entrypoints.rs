@@ -62,7 +62,6 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Vote { side } => executions::vote(deps, _env, info, side),
-        ExecuteMsg::ChangeSide { side } => executions::change_side(deps, _env, info, side),
         ExecuteMsg::FinishPoll {} => executions::finish_poll(deps, _env, info, false),
         // TODO : only for internal QA
         ExecuteMsg::ForceFinishPoll {} => executions::finish_poll(deps, _env, info, true),
