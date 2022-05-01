@@ -131,7 +131,7 @@ mod prediction_poll_tests {
         assert_eq!(0u64, value.side.unwrap());
 
         let info = mock_info("user", &[]);
-        let msg = ExecuteMsg::ChangeSide { side: 1 };
+        let msg = ExecuteMsg::Vote { side: 1 };
         let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
         let res = query(
@@ -147,7 +147,7 @@ mod prediction_poll_tests {
 
         // ContractError::ChangeToTheSameSide
         let info = mock_info("user", &[]);
-        let msg = ExecuteMsg::ChangeSide { side: 1 };
+        let msg = ExecuteMsg::Vote { side: 1 };
         assert!(matches!(
             execute(deps.as_mut(), env, info, msg),
             Err(ContractError::ChangeToTheSameSide {})

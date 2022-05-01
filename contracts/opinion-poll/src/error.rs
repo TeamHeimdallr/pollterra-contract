@@ -18,9 +18,6 @@ pub enum ContractError {
     #[error("Side should be less than {0}")]
     SideOutOfRange(u64),
 
-    #[error("Not participated yet")]
-    NotParticipated {},
-
     #[error("Cannot change to the same side")]
     ChangeToTheSameSide {},
 
